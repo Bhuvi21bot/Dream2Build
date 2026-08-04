@@ -15,6 +15,7 @@ import { useTheme } from "@/components/theme-provider"
  */
 
 const navLinks = [
+  { name: "Home", path: "/" },
   { name: "Products", path: "/products" },
   { name: "Pricing", path: "/pricing" },
   { name: "Community", path: "/community" },

@@ -1,14 +1,15 @@
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+
 import {
   Sparkles, ArrowRight, CheckCircle2, ChevronRight, Star,
   PenTool, Wand2, Upload, LayoutTemplate, Users,
   Layers, Sun, Ruler, Sofa, Compass, Palette,
 } from "lucide-react"
 // NOTE: adjust this import path to wherever your Antigravity component actually lives
-import Antigravity from "@/components/antigravity"
-
+import Antigravity from "@/components/Antigravity"
+import { Navbar } from "@/components/navbar"
 /**
  * DESIGN SYSTEM — "Blueprint & Paper" (unchanged from previous pass)
  * Background #FAF8F3 · Ink #1E2A22 · Primary #2F6F4E · Accent #D97A3F · Line #C9D6C9

@@ -1,6 +1,7 @@
 import { Link } from "wouter"
 import { Home, Twitter, Github, Linkedin, Instagram } from "lucide-react"
 
+
 export function Footer() {
   return (
     <footer className="bg-card border-t border-border py-16 px-4 md:px-8">

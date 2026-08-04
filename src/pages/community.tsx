@@ -293,8 +293,8 @@ export default function Community() {
 
                 <span
                   className={`relative z-10 transition-colors duration-300 ${activeTab === tab
-                      ? "text-white"
-                      : "text-[#1E2A22]/55 hover:text-[#1E2A22]"
+                    ? "text-white"
+                    : "text-[#1E2A22]/55 hover:text-[#1E2A22]"
                     }`}
                 >
                   {tab}

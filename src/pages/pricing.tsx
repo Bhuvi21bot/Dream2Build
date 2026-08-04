@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, Minus, ChevronDown, Ruler, Ruler as RulerIcon } from "lucide-react"
+import { CheckCircle2, Minus, ChevronDown, Ruler } from "lucide-react"
 
 /**
  * Pricing — "Blueprint & Paper" design system.
@@ -28,7 +28,7 @@ function BlueprintGrid({ className = "" }: { className?: string }) {
 function DimensionTag() {
   return (
     <div className="absolute -top-5 left-8 flex items-center gap-2 rounded-full border border-[#1E2A22] bg-[#F4EFE4] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[#1E2A22] shadow-[3px_3px_0_0_#1E2A22]">
-      <RulerIcon className="h-3 w-3 text-[#D97A3F]" />
+      <Ruler className="h-3 w-3 text-[#D97A3F]" />
       Recommended spec
     </div>
   )
@@ -158,11 +158,12 @@ export default function Pricing() {
           <button
             role="switch"
             aria-checked={annual}
+            aria-label="Toggle annual billing"
             onClick={() => setAnnual((a) => !a)}
-            className="relative h-8 w-14 rounded-full border border-[#1E2A22]/20 bg-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6F4E]"
+            className="relative h-8 w-14 shrink-0 rounded-full border border-[#1E2A22]/20 bg-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6F4E]"
           >
             <span
-              className={`absolute top-1 h-6 w-6 rounded-full bg-[#2F6F4E] transition-transform ${annual ? "translate-x-7" : "translate-x-1"
+              className={`absolute left-0 top-1 h-6 w-6 rounded-full bg-[#2F6F4E] transition-transform duration-200 ${annual ? "translate-x-7" : "translate-x-1"
                 }`}
             />
           </button>
@@ -181,9 +182,7 @@ export default function Pricing() {
             return (
               <div
                 key={tier.name}
-                className={`relative rounded-3xl border bg-white p-8 ${tier.popular
-                    ? "border-[#2F6F4E] shadow-[6px_6px_0_0_#1E2A22]"
-                    : "border-[#1E2A22]/10 shadow-sm"
+                className={`relative rounded-3xl border bg-white p-8 ${tier.popular ? "border-[#2F6F4E] shadow-[6px_6px_0_0_#1E2A22]" : "border-[#1E2A22]/10 shadow-sm"
                   }`}
               >
                 {tier.popular && <DimensionTag />}
@@ -286,10 +285,7 @@ export default function Pricing() {
                   <tr key={row.label} className={i % 2 === 0 ? "" : "bg-[#FAF8F3]/60"}>
                     <td className="p-5 text-[#1E2A22]/75">{row.label}</td>
                     {[row.sketch, row.drafting, row.studio].map((val, idx) => (
-                      <td
-                        key={idx}
-                        className={`p-5 ${TIERS[idx].popular ? "bg-[#2F6F4E]/5" : ""}`}
-                      >
+                      <td key={TIERS[idx].name} className={`p-5 ${TIERS[idx].popular ? "bg-[#2F6F4E]/5" : ""}`}>
                         {typeof val === "boolean" ? (
                           val ? (
                             <CheckCircle2 className="h-4 w-4 text-[#2F6F4E]" />
@@ -320,21 +316,31 @@ export default function Pricing() {
           <div className="divide-y divide-[#1E2A22]/10 rounded-2xl border border-[#1E2A22]/10 bg-white">
             {FAQS.map((item, i) => {
               const isOpen = openFaq === i
+              const panelId = `faq-panel-${i}`
+              const buttonId = `faq-button-${i}`
               return (
                 <div key={item.q}>
                   <button
+                    id={buttonId}
                     onClick={() => setOpenFaq(isOpen ? null : i)}
                     aria-expanded={isOpen}
+                    aria-controls={panelId}
                     className="flex w-full items-center justify-between gap-4 p-6 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6F4E]"
                   >
                     <span className="font-serif text-lg font-medium">{item.q}</span>
                     <ChevronDown
-                      className={`h-5 w-5 shrink-0 text-[#1E2A22]/50 transition-transform ${isOpen ? "rotate-180" : ""
-                        }`}
+                      className={`h-5 w-5 shrink-0 text-[#1E2A22]/50 transition-transform ${isOpen ? "rotate-180" : ""}`}
                     />
                   </button>
                   {isOpen && (
-                    <div className="px-6 pb-6 text-sm leading-relaxed text-[#1E2A22]/65">{item.a}</div>
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      className="px-6 pb-6 text-sm leading-relaxed text-[#1E2A22]/65"
+                    >
+                      {item.a}
+                    </div>
                   )}
                 </div>
               )
@@ -355,10 +361,7 @@ export default function Pricing() {
                 your workflow — not ours.
               </p>
             </div>
-            <Button
-              size="lg"
-              className="rounded-full bg-[#D97A3F] px-8 font-semibold text-white hover:bg-[#c66a30]"
-            >
+            <Button size="lg" className="rounded-full bg-[#D97A3F] px-8 font-semibold text-white hover:bg-[#c66a30]">
               Talk to our team
             </Button>
           </div>
