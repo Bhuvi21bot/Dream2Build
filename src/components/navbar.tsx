@@ -1,110 +1,167 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useLocation } from "wouter"
-import { motion } from "framer-motion"
-import { Moon, Sun, Menu, X, Home } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Moon, Sun, Menu, X, Home as HomeIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
 
+/**
+ * Floating "drafting pin" navbar — Blueprint & Paper design system.
+ * - Pill-shaped, glassy, sits a fixed distance from the top like a pinned
+ *   ruler on a drawing board, gains a soft shadow once you've scrolled.
+ * - Active route gets a small green dot (layoutId animated, like a pin
+ *   sliding along a ruler) instead of a color change alone.
+ * - Same paper/ink/green/clay tokens as the rest of the site.
+ */
+
+const navLinks = [
+  { name: "Products", path: "/products" },
+  { name: "Pricing", path: "/pricing" },
+  { name: "Community", path: "/community" },
+  { name: "Marketplace", path: "/marketplace" },
+  { name: "About", path: "/about" },
+]
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const { theme, setTheme } = useTheme()
   const [location] = useLocation()
 
-  const navLinks = [
-    { name: "Products", path: "/products" },
-    { name: "Pricing", path: "/pricing" },
-    { name: "Community", path: "/community" },
-    { name: "Marketplace", path: "/marketplace" },
-    { name: "About", path: "/about" },
-  ]
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener("scroll", onScroll)
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/60 backdrop-blur-xl">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 group-hover:bg-primary/30 transition-colors">
-            <Home className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-display font-bold text-xl tracking-wide bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Dream2Build
-          </span>
-        </Link>
+    <>
+      <motion.header
+        initial={{ y: -32, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed left-1/2 top-4 z-50 w-[94%] max-w-5xl -translate-x-1/2 sm:top-5"
+      >
+        <div
+          className={`flex items-center justify-between gap-4 rounded-full border border-[#1E2A22]/10 bg-[#FAF8F3]/75 px-4 py-2.5 backdrop-blur-xl transition-shadow duration-300 sm:px-5 ${scrolled ? "shadow-[0_8px_28px_-8px_rgba(30,42,34,0.25)]" : "shadow-[0_2px_10px_-4px_rgba(30,42,34,0.12)]"
+            }`}
+        >
+          {/* Logo */}
+          <Link href="/" className="group flex shrink-0 items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#2F6F4E]/30 bg-[#2F6F4E]/10 transition-colors group-hover:bg-[#2F6F4E]/20">
+              <HomeIcon className="h-4 w-4 text-[#2F6F4E]" />
+            </div>
+            <span className="font-serif text-lg font-medium tracking-tight text-[#1E2A22]">
+              Dream2Build<span className="text-[#D97A3F]">.</span>
+            </span>
+          </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              href={link.path}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location === link.path ? "text-primary" : "text-foreground/80"
-              }`}
+          {/* Desktop links */}
+          <nav className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => {
+              const active = location === link.path
+              return (
+                <Link
+                  key={link.path}
+                  href={link.path}
+                  className={`relative rounded-full px-3.5 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${active ? "text-[#1E2A22]" : "text-[#1E2A22]/55 hover:text-[#1E2A22]"
+                    }`}
+                >
+                  {link.name}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active-dot"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#D97A3F]"
+                    />
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Desktop actions */}
+          <div className="hidden items-center gap-2 md:flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="relative h-9 w-9 rounded-full text-[#1E2A22]/70 hover:bg-[#1E2A22]/5 hover:text-[#1E2A22]"
             >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
+              <Sun className="h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+            <Button variant="ghost" className="rounded-full font-medium text-[#1E2A22]/75 hover:text-[#1E2A22]">
+              Log in
+            </Button>
+            <Button className="rounded-full bg-[#D97A3F] px-5 text-white hover:bg-[#c66a30]">
+              Start free
+            </Button>
+          </div>
 
-        <div className="hidden md:flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="text-foreground/80 hover:text-foreground"
+          {/* Mobile toggle */}
+          <button
+            className="rounded-full p-2 text-[#1E2A22]/75 md:hidden"
+            onClick={() => setIsOpen((o) => !o)}
+            aria-label="Toggle menu"
           >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-          <Button variant="ghost" className="font-medium hidden lg:inline-flex">Log In</Button>
-          <Button variant="premium">Start Free</Button>
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+      </motion.header>
 
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden p-2 text-foreground/80"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="fixed left-1/2 top-[4.75rem] z-50 w-[92%] max-w-sm -translate-x-1/2 rounded-3xl border border-[#1E2A22]/10 bg-[#FAF8F3]/95 p-4 shadow-2xl backdrop-blur-xl md:hidden"
+          >
+            <nav className="flex flex-col gap-1">
+              {navLinks.map((link) => {
+                const active = location === link.path
+                return (
+                  <Link
+                    key={link.path}
+                    href={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`rounded-xl px-3 py-2.5 font-mono text-sm uppercase tracking-wide ${active ? "bg-[#2F6F4E]/10 text-[#1E2A22]" : "text-[#1E2A22]/65"
+                      }`}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              })}
+            </nav>
 
-      {/* Mobile Nav */}
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="md:hidden absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border shadow-lg p-4"
-        >
-          <nav className="flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                href={link.path}
-                className="text-base font-medium text-foreground/80 hover:text-primary p-2"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <div className="flex items-center justify-between p-2 border-t border-border mt-2 pt-4">
-              <span className="text-sm font-medium text-foreground/80">Theme</span>
+            <div className="mt-3 flex items-center justify-between border-t border-[#1E2A22]/10 p-2 pt-4">
+              <span className="font-mono text-xs uppercase tracking-wide text-[#1E2A22]/55">Theme</span>
               <Button
                 variant="outline"
                 size="icon"
+                className="rounded-full border-[#1E2A22]/15"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
-                {theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               </Button>
             </div>
-            <div className="flex flex-col gap-2 mt-4">
-              <Button variant="outline" className="w-full">Log In</Button>
-              <Button variant="premium" className="w-full">Start Free</Button>
+
+            <div className="mt-3 flex flex-col gap-2">
+              <Button variant="outline" className="w-full rounded-full border-[#1E2A22]/15">
+                Log in
+              </Button>
+              <Button className="w-full rounded-full bg-[#D97A3F] text-white hover:bg-[#c66a30]">
+                Start free
+              </Button>
             </div>
-          </nav>
-        </motion.div>
-      )}
-    </header>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

@@ -215,7 +215,7 @@ class LensflareMesh extends Mesh {
 
 			renderer.getViewport( viewport );
 
-			viewport.multiplyScalar( renderer.getPixelRatio() ).floor();
+			viewport.multiplyScalar( window.devicePixelRatio );
 
 			const renderTarget = renderer.getRenderTarget();
 			const type = ( renderTarget !== null ) ? renderTarget.texture.type : UnsignedByteType;

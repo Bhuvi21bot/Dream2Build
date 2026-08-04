@@ -64,7 +64,7 @@
 
   --background: 30 50% 98%;
   --foreground: 24 53% 12%;
-  
+
   --border: 30 30% 85%;
   --input: 30 30% 85%;
   --ring: 28 67% 44%;
@@ -115,7 +115,7 @@
     0px 2px 0px 0px hsl(28 67% 44% / 0.1),
     0px 8px 10px -1px hsl(28 67% 44% / 0.1);
   --shadow-2xl: 0px 2px 0px 0px hsl(28 67% 44% / 0.1);
-  
+
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -134,7 +134,7 @@
 
   --background: 23 58% 7%;
   --foreground: 30 56% 90%;
-  
+
   --border: 24 38% 20%;
   --input: 24 38% 20%;
   --ring: 32 63% 62%;
@@ -167,6 +167,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply font-sans antialiased bg-background text-foreground selection:bg-primary/30 selection:text-primary;
   }

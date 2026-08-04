@@ -69,27 +69,27 @@ export type FloorPlanState = {
   scale: number // px per cm
   view: 'split' | '2d' | '3d'
   cameraMode: 'orbit' | 'firstperson' | 'top' | 'dollhouse'
-  
+
   addWall: (wall: Wall) => void
   updateWall: (id: string, wall: Partial<Wall>) => void
   deleteWall: (id: string) => void
-  
+
   addRoom: (room: Room) => void
   updateRoom: (id: string, room: Partial<Room>) => void
   deleteRoom: (id: string) => void
-  
+
   addDoor: (door: Door) => void
   updateDoor: (id: string, door: Partial<Door>) => void
   deleteDoor: (id: string) => void
-  
+
   addWindow: (window: Window) => void
   updateWindow: (id: string, window: Partial<Window>) => void
   deleteWindow: (id: string) => void
-  
+
   addFurniture: (furniture: Furniture) => void
   updateFurniture: (id: string, furniture: Partial<Furniture>) => void
   deleteFurniture: (id: string) => void
-  
+
   setActiveTool: (tool: Tool) => void
   setSelectedId: (id: string | null) => void
   setView: (view: 'split' | '2d' | '3d') => void
@@ -97,7 +97,7 @@ export type FloorPlanState = {
   toggleGrid: () => void
   toggleSnap: () => void
   setScale: (scale: number) => void
-  
+
   clearAll: () => void
   loadSamplePlan: () => void
 }
