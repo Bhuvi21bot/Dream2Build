@@ -24,7 +24,7 @@ export function Footer() {
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Instagram className="w-5 h-5" /></a>
           </div>
         </div>
-        
+
         <div>
           <h4 className="font-bold mb-4 font-display text-lg">Product</h4>
           <ul className="space-y-3">
@@ -34,7 +34,7 @@ export function Footer() {
             <li><Link href="/pricing" className="text-muted-foreground hover:text-primary text-sm transition-colors">Pricing</Link></li>
           </ul>
         </div>
-        
+
         <div>
           <h4 className="font-bold mb-4 font-display text-lg">Resources</h4>
           <ul className="space-y-3">
@@ -44,7 +44,7 @@ export function Footer() {
             <li><a href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">Blog</a></li>
           </ul>
         </div>
-        
+
         <div>
           <h4 className="font-bold mb-4 font-display text-lg">Company</h4>
           <ul className="space-y-3">
@@ -58,7 +58,7 @@ export function Footer() {
       <div className="container mx-auto mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} Dream2Build. All rights reserved.</p>
         <p className="mt-4 md:mt-0 flex items-center gap-1">
-          Crafted with <span className="text-primary">♥</span> in San Francisco
+          Made with love by <span className="text-primary">♥</span> in Noida
         </p>
       </div>
     </footer>
