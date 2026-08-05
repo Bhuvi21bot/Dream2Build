@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import Antigravity from "@/components/antigravity"
+import Antigravity from "@/components/Antigravity"
 
 import {
   Heart,

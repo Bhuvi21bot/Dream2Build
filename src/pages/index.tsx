@@ -5,5 +5,5 @@ import Pricing from "@/pages/pricing"
 import Community from "@/pages/community"
 import Marketplace from "@/pages/marketplace"
 import About from "@/pages/about"
-
-export { Home, Products, Pricing, Community, Marketplace, About }
+import { Navbar } from "@/components/navbar"
+export { Home, Products, Pricing, Community, Marketplace, About, Navbar }
