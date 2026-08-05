@@ -9,6 +9,8 @@ import {
 } from "lucide-react"
 // NOTE: adjust this import path to wherever your Antigravity component actually lives
 import Antigravity from "@/components/Antigravity"
+import { Navbar } from "@/components/navbar"
+import { QuickDock } from "@/components/quick-dock"
 /**
  * DESIGN SYSTEM — "Blueprint & Paper" (unchanged from previous pass)
  * Background #FAF8F3 · Ink #1E2A22 · Primary #2F6F4E · Accent #D97A3F · Line #C9D6C9
@@ -21,6 +23,11 @@ import Antigravity from "@/components/Antigravity"
  *   plans → final CTA.
  * No external/AI-generated image assets — every visual is built from CSS + SVG so
  * the file has zero image dependencies.
+ *
+ * Navbar is mounted here at the top of the tree. It's `position: fixed`
+ * internally (a floating pill, not a normal header), so it's rendered as a
+ * sibling of the hero rather than nested inside it — the hero's own
+ * `pt-36 md:pt-40` already reserves the vertical space for it to float over.
  */
 
 function BlueprintGrid({ className = "" }: { className?: string }) {
@@ -149,7 +156,14 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <div className="w-full bg-[#FAF8F3] text-[#1E2A22] font-sans sm:pl-64">
+    <div className="w-full bg-[#FAF8F3] text-[#1E2A22] font-sans">
+      {/* Fixed floating pill nav — sits above everything (z-50), the hero's top
+          padding below already makes room for it */}
+      <Navbar />
+
+      {/* Second floating dock, opposite edge — desktop-only, doesn't collide with Navbar */}
+      <QuickDock />
+
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[#1E2A22]/10">
         <BlueprintGrid />
@@ -175,7 +189,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="container relative z-10 mx-auto grid grid-cols-1 items-center gap-16 px-6 pb-24 pt-24 pointer-events-none sm:pb-28 sm:pt-20 lg:grid-cols-[1fr_1.05fr]">
+        <div className="container relative z-10 mx-auto grid grid-cols-1 items-center gap-16 px-6 pb-24 pt-36 pointer-events-none md:pb-28 md:pt-40 lg:grid-cols-[1fr_1.05fr]">
           <div className="pointer-events-auto">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
