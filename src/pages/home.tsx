@@ -9,7 +9,6 @@ import {
 } from "lucide-react"
 // NOTE: adjust this import path to wherever your Antigravity component actually lives
 import Antigravity from "@/components/Antigravity"
-import { Navbar } from "@/components/navbar"
 /**
  * DESIGN SYSTEM — "Blueprint & Paper" (unchanged from previous pass)
  * Background #FAF8F3 · Ink #1E2A22 · Primary #2F6F4E · Accent #D97A3F · Line #C9D6C9
@@ -150,7 +149,7 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <div className="w-full bg-[#FAF8F3] text-[#1E2A22] font-sans">
+    <div className="w-full bg-[#FAF8F3] text-[#1E2A22] font-sans sm:pl-64">
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[#1E2A22]/10">
         <BlueprintGrid />
@@ -176,7 +175,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="container relative z-10 mx-auto grid grid-cols-1 items-center gap-16 px-6 pb-24 pt-36 pointer-events-none md:pb-28 md:pt-40 lg:grid-cols-[1fr_1.05fr]">
+        <div className="container relative z-10 mx-auto grid grid-cols-1 items-center gap-16 px-6 pb-24 pt-24 pointer-events-none sm:pb-28 sm:pt-20 lg:grid-cols-[1fr_1.05fr]">
           <div className="pointer-events-auto">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
