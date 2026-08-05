@@ -341,7 +341,7 @@ export default function Home() {
 
           <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-12 md:grid-cols-3">
             <svg className="pointer-events-none absolute left-0 top-[19px] hidden w-full md:block" height="2">
-              <line x1="16%" y1="1" x2="84%" y2="1" stroke="#2F6F4E" strokeOpacity="0.35" strokeWidth="2" strokeDasharray="6 8" />
+              <line x1="0%" y1="1" x2="70%" y2="1" stroke="#2F6F4E" strokeOpacity="0.45" strokeWidth="2" strokeDasharray="6 5" />
             </svg>
             <Step n="01" title="Draw the plan" copy="Sketch walls and rooms to scale, or start from a template." />
             <Step n="02" title="Furnish & finish" copy="Drag in furniture, flooring, and materials from the catalog." />
