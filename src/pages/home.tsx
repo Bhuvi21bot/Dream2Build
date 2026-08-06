@@ -1,6 +1,15 @@
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 import {
   Sparkles, ArrowRight, CheckCircle2, ChevronRight, Star,
@@ -11,23 +20,32 @@ import {
 import Antigravity from "@/components/Antigravity"
 import { Navbar } from "@/components/navbar"
 import { QuickDock } from "@/components/quick-dock"
+
+// Entry-point card art — cropped from the user's own reference illustrations
+// (headers/artifacts removed, backgrounds matched to the page's cream tone).
+// Place these five files at src/assets/entry-points/ — see the zip's assets folder.
+import scratchImg from "@/assets/start-from-scratch.jpg"
+import wizardImg from "@/assets/smart-wizard.jpg"
+import importImg from "@/assets/import-plan.jpg"
+import templateImg from "@/assets/templates.jpg"
+import hireImg from "@/assets/hire-designer.jpg"
+
 /**
  * DESIGN SYSTEM — "Blueprint & Paper" (unchanged from previous pass)
  * Background #FAF8F3 · Ink #1E2A22 · Primary #2F6F4E · Accent #D97A3F · Line #C9D6C9
  * Display: Fraunces (serif) · Body: Plus Jakarta Sans · Data: JetBrains Mono
  *
- * This pass mirrors Planner5D's actual homepage structure:
- *   Hero (product screenshot, not lifestyle photo) → trust bar → 5 entry points
- *   (Start from scratch / Smart Wizard / Import a plan / Templates / Hire a designer)
- *   → alternating feature showcase → how it works → testimonials → community
- *   plans → final CTA.
- * No external/AI-generated image assets — every visual is built from CSS + SVG so
- * the file has zero image dependencies.
+ * NAVIGATION NOTE: this project is Vite + React (not Next.js), so there is
+ * no next/navigation here. Entry-point "Continue" uses plain
+ * window.location.href for now. If react-router-dom is installed in this
+ * project, replace the goTo() helper below with useNavigate() instead.
  *
- * Navbar is mounted here at the top of the tree. It's `position: fixed`
- * internally (a floating pill, not a normal header), so it's rendered as a
- * sibling of the hero rather than nested inside it — the hero's own
- * `pt-36 md:pt-40` already reserves the vertical space for it to float over.
+ * ENTRY POINTS: a hover-expand image accordion (5 panels, one wide/active
+ * at a time) instead of a static grid. Adapted from a plain-React demo:
+ * ported to TS, restyled to Blueprint & Paper, uses the real entry-point
+ * illustrations instead of stock photos, and clicking the already-active
+ * panel opens the same detail modal the grid version used — hover/focus
+ * only expands, it doesn't commit to anything.
  */
 
 function BlueprintGrid({ className = "" }: { className?: string }) {
@@ -116,12 +134,150 @@ function RenderMock() {
 }
 
 const ENTRY_POINTS = [
-  { icon: PenTool, label: "Start from scratch", copy: "A blank canvas and full control." },
-  { icon: Wand2, label: "Smart Wizard", copy: "Answer a few questions, get a plan." },
-  { icon: Upload, label: "Import a plan", copy: "Upload a blueprint photo to convert." },
-  { icon: LayoutTemplate, label: "Templates", copy: "Start from a ready-made layout." },
-  { icon: Users, label: "Hire a designer", copy: "Bring in a pro when you need one." },
+  {
+    key: "scratch" as const,
+    icon: PenTool,
+    image: scratchImg,
+    label: "Start from scratch",
+    copy: "A blank canvas and full control.",
+    description:
+      "Open a completely empty 2D canvas and draw your own walls, rooms, and openings from a grid — best if you already know roughly what you want.",
+    bullets: [
+      "Full control over every wall, door, and window",
+      "Snap-to-grid drawing tools, no drafting experience needed",
+      "Switch to 3D anytime to check scale",
+    ],
+    href: "/editor/new",
+  },
+  {
+    key: "wizard" as const,
+    icon: Wand2,
+    image: wizardImg,
+    label: "Smart Wizard",
+    copy: "Answer a few questions, get a plan.",
+    description:
+      "A short guided flow — lot size, number of rooms, style preferences — that generates a starting floor plan for you to edit.",
+    bullets: [
+      "Takes about 3 minutes",
+      "Generates a first-draft layout automatically",
+      "Fully editable afterward in the normal editor",
+    ],
+    href: "/wizard",
+  },
+  {
+    key: "import" as const,
+    icon: Upload,
+    image: importImg,
+    label: "Import a plan",
+    copy: "Upload a blueprint photo to convert.",
+    description:
+      "Upload a photo or scan of an existing floor plan and we'll convert it into an editable 2D layout you can adjust and furnish.",
+    bullets: [
+      "Supports photos, scans, and PDFs",
+      "Auto-detects walls, doors, and windows",
+      "Review and correct before finishing",
+    ],
+    href: "/import",
+  },
+  {
+    key: "template" as const,
+    icon: LayoutTemplate,
+    image: templateImg,
+    label: "Templates",
+    copy: "Start from a ready-made layout.",
+    description:
+      "Pick from a library of pre-built floor plans across common home types and sizes, then customize it to fit your space.",
+    bullets: [
+      "Organized by home type and square footage",
+      "Fully editable once selected",
+      "Good starting point if you're not sure what you want yet",
+    ],
+    href: "/templates",
+  },
+  {
+    key: "hire" as const,
+    icon: Users,
+    image: hireImg,
+    label: "Hire a designer",
+    copy: "Bring in a pro when you need one.",
+    description:
+      "Get matched with a professional designer who can take your project from concept to finished plan, or just review what you've already drafted.",
+    bullets: [
+      "Matched based on your project type and budget",
+      "Message and share your draft directly in-app",
+      "Pay per project, no subscription required",
+    ],
+    href: "/designers",
+  },
 ]
+
+/** One panel of the "however you like to begin" accordion. Inactive panels are a
+ *  narrow vertical strip with a rotated label; hovering/focusing one expands it.
+ *  Clicking a panel that's already expanded opens the detail modal — clicking an
+ *  inactive one just expands it first, so nothing opens by accident. */
+function EntryAccordionItem({
+  entry,
+  isActive,
+  onActivate,
+  onOpen,
+  index,
+}: {
+  entry: (typeof ENTRY_POINTS)[number]
+  isActive: boolean
+  onActivate: () => void
+  onOpen: () => void
+  index: number
+}) {
+  const { icon: Icon, image, label, copy } = entry
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay: index * 0.06 }}
+      onMouseEnter={onActivate}
+      onFocus={onActivate}
+      onClick={() => (isActive ? onOpen() : onActivate())}
+      aria-expanded={isActive}
+      aria-label={isActive ? `${label} — activate to open details` : `${label} — hover or focus to expand`}
+      className={`group relative h-[320px] shrink-0 overflow-hidden rounded-3xl border border-[#1E2A22]/10 text-left shadow-sm transition-[width] duration-700 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6F4E] md:h-[420px] ${isActive ? "w-[260px] md:w-[320px]" : "w-[56px] md:w-[64px]"
+        }`}
+    >
+      <img
+        src={image}
+        alt={label}
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+      />
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1E2A22]/85 via-[#1E2A22]/15 to-transparent transition-opacity duration-500 ${isActive ? "opacity-100" : "opacity-60"
+          }`}
+      />
+
+      {/* Icon badge — always visible, top-left */}
+      <div className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/95 shadow-md ring-1 ring-[#1E2A22]/5">
+        <Icon className="h-4 w-4 text-[#2F6F4E]" />
+      </div>
+
+      {/* Caption — rotated strip when collapsed, full card copy when expanded */}
+      {isActive ? (
+        <div className="absolute inset-x-4 bottom-4">
+          <span className="font-serif text-lg font-medium text-white">{label}</span>
+          <p className="mt-1 text-xs leading-snug text-white/75">{copy}</p>
+          <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-white backdrop-blur">
+            Tap to continue <ArrowRight className="h-3 w-3" />
+          </span>
+        </div>
+      ) : (
+        <div className="absolute bottom-6 left-1/2 w-[280px] -translate-x-1/2 -rotate-90">
+          <span className="whitespace-nowrap font-mono text-xs uppercase tracking-wide text-white">
+            {label}
+          </span>
+        </div>
+      )}
+    </motion.button>
+  )
+}
 
 const FEATURES = [
   {
@@ -155,20 +311,30 @@ const FEATURES = [
 ]
 
 export default function Home() {
+  const [activeEntry, setActiveEntry] = useState<(typeof ENTRY_POINTS)[number] | null>(null)
+  const [activeAccordionIndex, setActiveAccordionIndex] = useState(0)
+
+  // Plain browser navigation — works with zero extra deps in a Vite app.
+  // If react-router-dom is installed in this project, swap this for
+  // `const navigate = useNavigate()` and call `navigate(href)` instead.
+  const goTo = (href: string) => {
+    window.location.href = href
+  }
+
+  const handleContinue = () => {
+    if (!activeEntry) return
+    goTo(activeEntry.href)
+    setActiveEntry(null)
+  }
+
   return (
     <div className="w-full bg-[#FAF8F3] text-[#1E2A22] font-sans">
-      {/* Fixed floating pill nav — sits above everything (z-50), the hero's top
-          padding below already makes room for it */}
       <Navbar />
-
-      {/* Second floating dock, opposite edge — desktop-only, doesn't collide with Navbar */}
       <QuickDock />
 
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[#1E2A22]/10">
         <BlueprintGrid />
-
-        {/* Ambient particle field — spans the full hero so hover works everywhere and there's no seam between a "covered" patch and plain background */}
         <div className="absolute inset-0 z-0 opacity-30 mix-blend-multiply">
           <Antigravity
             count={550}
@@ -275,31 +441,83 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ENTRY POINTS */}
+      {/* ENTRY POINTS — hover-expand image accordion */}
       <section className="py-20">
         <div className="container mx-auto px-6">
           <div className="mb-10 max-w-xl">
             <span className="font-mono text-xs uppercase tracking-widest text-[#D97A3F]">Get started</span>
             <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight md:text-4xl">However you like to begin.</h2>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-            {ENTRY_POINTS.map(({ icon: Icon, label, copy }) => (
-              <button
-                key={label}
-                className="group flex flex-col items-start gap-3 rounded-2xl border border-[#1E2A22]/10 bg-white p-5 text-left transition-colors hover:border-[#2F6F4E]/40"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2F6F4E]/10 transition-colors group-hover:bg-[#2F6F4E]/15">
-                  <Icon className="h-5 w-5 text-[#2F6F4E]" />
-                </div>
-                <div>
-                  <div className="font-semibold leading-tight">{label}</div>
-                  <div className="mt-1 text-xs text-[#1E2A22]/55">{copy}</div>
-                </div>
-              </button>
+
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {ENTRY_POINTS.map((entry, i) => (
+              <EntryAccordionItem
+                key={entry.key}
+                entry={entry}
+                index={i}
+                isActive={activeAccordionIndex === i}
+                onActivate={() => setActiveAccordionIndex(i)}
+                onOpen={() => setActiveEntry(entry)}
+              />
             ))}
           </div>
         </div>
       </section>
+
+      {/* ENTRY POINT DETAIL MODAL */}
+      <Dialog open={!!activeEntry} onOpenChange={(open) => !open && setActiveEntry(null)}>
+        <DialogContent className="overflow-hidden rounded-2xl border-[#1E2A22]/10 bg-[#FAF8F3] p-0 sm:max-w-md">
+          {activeEntry && (
+            <>
+              <div className="relative h-44 w-full overflow-hidden">
+                <img
+                  src={activeEntry.image}
+                  alt={activeEntry.label}
+                  className="h-full w-full object-cover"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#FAF8F3] via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-[#1E2A22]/5">
+                  <activeEntry.icon className="h-5 w-5 text-[#2F6F4E]" />
+                </div>
+              </div>
+
+              <div className="px-6 pb-6 pt-2">
+                <DialogHeader>
+                  <DialogTitle className="font-serif text-2xl font-medium">{activeEntry.label}</DialogTitle>
+                  <DialogDescription className="text-[#1E2A22]/65">
+                    {activeEntry.description}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <ul className="my-4 space-y-2">
+                  {activeEntry.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-sm text-[#1E2A22]/70">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2F6F4E]" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+
+                <DialogFooter className="mt-4 flex-row justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    className="rounded-full border-[#1E2A22]/20"
+                    onClick={() => setActiveEntry(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="rounded-full bg-[#D97A3F] text-white hover:bg-[#c66a30]"
+                    onClick={handleContinue}
+                  >
+                    Continue <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </DialogFooter>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ALTERNATING FEATURE SHOWCASE */}
       <section className="border-y border-[#1E2A22]/10 bg-white py-24">
