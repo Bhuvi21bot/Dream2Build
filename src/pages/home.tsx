@@ -16,8 +16,6 @@ import {
   Layers, Sun, Ruler, Sofa, Compass, Palette,
 } from "lucide-react"
 import Antigravity from "@/components/Antigravity"
-import { Navbar } from "@/components/navbar"
-import { QuickDock } from "@/components/quick-dock"
 
 import scratchImg from "@/assets/start-from-scratch.jpg"
 import wizardImg from "@/assets/smart-wizard.jpg"
@@ -106,7 +104,21 @@ function RenderMock() {
   )
 }
 
-const ENTRY_POINTS = [
+/** Explicit type — needed because `popular` only exists on one entry;
+ *  without this, TS strict mode would error on `entry.popular` below. */
+type EntryPoint = {
+  key: string
+  icon: React.ComponentType<{ className?: string }>
+  image: string
+  label: string
+  copy: string
+  description: string
+  bullets: string[]
+  href: string
+  popular?: boolean
+}
+
+const ENTRY_POINTS: EntryPoint[] = [
   { key: "scratch", icon: PenTool, image: scratchImg, label: "Start from scratch", copy: "A blank canvas and full control.", description: "Open a completely empty 2D canvas and draw your own walls, rooms, and openings from a grid.", bullets: ["Full control over every wall, door, and window", "Snap-to-grid drawing tools", "Switch to 3D anytime to check scale"], href: "/editor/new" },
   { key: "wizard", icon: Wand2, image: wizardImg, label: "Smart Wizard", copy: "Answer a few questions, get a plan.", description: "A short guided flow — lot size, number of rooms, style — that generates a starting floor plan for you to edit.", bullets: ["Takes about 3 minutes", "Generates a first-draft layout automatically", "Fully editable afterward"], href: "/wizard", popular: true },
   { key: "import", icon: Upload, image: importImg, label: "Import a plan", copy: "Upload a blueprint photo to convert.", description: "Upload a photo or scan of an existing floor plan and we'll convert it into an editable layout.", bullets: ["Supports photos, scans, and PDFs", "Auto-detects walls, doors, and windows", "Review and correct before finishing"], href: "/import" },
@@ -121,22 +133,132 @@ const FEATURES = [
   { icon: Compass, eyebrow: "04 · Site analysis", title: "Know how the sun and wind move through the plan", copy: "Orientation, daylight, and airflow are checked automatically as you draft, not left for an engineer to catch later.", mock: "render" as const },
 ]
 
+/** Desktop accordion panel — width is driven entirely by framer-motion's
+ *  own `animate` prop (spring physics) instead of a CSS `flex-[n]` class.
+ *  This is the fix for the "stutter": before, a Tailwind CSS transition
+ *  was fighting an AnimatePresence content-swap that used mode="wait"
+ *  (full fade-out before fade-in), so the width jump and the content
+ *  swap were never actually in sync. Now both are driven by the same
+ *  animation system and overlap naturally. */
+function EntryPanel({
+  entry,
+  index,
+  isActive,
+  onActivate,
+  onOpen,
+}: {
+  entry: EntryPoint
+  index: number
+  isActive: boolean
+  onActivate: () => void
+  onOpen: () => void
+}) {
+  const Icon = entry.icon
+  return (
+    <motion.button
+      type="button"
+      layout
+      onMouseEnter={onActivate}
+      onFocus={onActivate}
+      onClick={() => (isActive ? onOpen() : onActivate())}
+      animate={{ flexGrow: isActive ? 3.5 : 0.65 }}
+      transition={{ type: "spring", stiffness: 260, damping: 32 }}
+      aria-expanded={isActive}
+      aria-label={isActive ? `${entry.label} — activate to open details` : `${entry.label} — hover or focus to expand`}
+      className={`group relative min-w-0 overflow-hidden rounded-[28px] border text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6F4E] ${isActive ? "border-[#2F6F4E]/30 shadow-xl" : "max-w-[84px] border-[#1E2A22]/10 hover:border-[#1E2A22]/20"
+        }`}
+      style={{ flexBasis: 0 }}
+    >
+      <img
+        src={entry.image}
+        alt={entry.label}
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+      />
+      <motion.div
+        animate={{
+          background: isActive
+            ? "linear-gradient(to top, rgba(30,42,34,0.90), rgba(30,42,34,0.35), transparent)"
+            : "linear-gradient(to top, rgba(30,42,34,0.70), rgba(30,42,34,0.15), transparent)",
+        }}
+        transition={{ duration: 0.4 }}
+        className="absolute inset-0"
+      />
+
+      <div className="absolute left-3 right-3 top-3 flex items-center justify-between">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-black/5">
+          <Icon className="h-4 w-4 text-[#2F6F4E]" />
+        </div>
+        {isActive && entry.popular && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-full bg-[#D97A3F] px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white"
+          >
+            Popular
+          </motion.span>
+        )}
+      </div>
+
+      <AnimatePresence initial={false}>
+        {isActive ? (
+          <motion.div
+            key="active"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-x-4 bottom-4"
+          >
+            <span className="font-mono text-[10px] uppercase tracking-widest text-white/60">
+              0{index + 1} — {entry.key}
+            </span>
+            <h4 className="mt-1 font-serif text-[22px] font-medium leading-none text-white">{entry.label}</h4>
+            <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/80">{entry.copy}</p>
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-[#1E2A22] shadow">
+              Open <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="inactive"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0 flex flex-col items-center justify-end pb-6"
+          >
+            <span className="mb-3 h-7 w-px bg-white/40" />
+            <span className="text-center font-serif text-sm font-medium leading-tight text-white [writing-mode:vertical-lr] rotate-180 drop-shadow">
+              {entry.label}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isActive && (
+        <motion.div
+          layoutId="entry-accent"
+          transition={{ type: "spring", stiffness: 260, damping: 32 }}
+          className="absolute bottom-0 left-4 right-4 h-[3px] rounded-full bg-[#D97A3F]"
+        />
+      )}
+    </motion.button>
+  )
+}
+
 export default function Home() {
-  const [activeEntry, setActiveEntry] = useState<(typeof ENTRY_POINTS)[number] | null>(null)
+  const [activeEntry, setActiveEntry] = useState<EntryPoint | null>(null)
   const [activeIndex, setActiveIndex] = useState(1)
 
   const goTo = (href: string) => (window.location.href = href)
 
   return (
     <div className="w-full bg-[#FAF8F3] text-[#1E2A22]">
-      <Navbar />
-      <QuickDock />
-
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-[#1E2A22]/10">
         <BlueprintGrid />
         <div className="absolute inset-0 z-0 opacity-30 mix-blend-multiply">
-          <Antigravity count={550} magnetRadius={11} ringRadius={5} waveSpeed={0.2} waveAmplitude={0.5} particleSize={1.5} lerpSpeed={0.1} color="#2F6F4E" autoAnimate particleVariance={1} rotationSpeed={0} depthFactor={1} pulseSpeed={3} particleShape="capsule" fieldStrength={10} />
+          <Antigravity count={550} magnetRadius={11} ringRadius={5} waveSpeed={0.2} waveAmplitude={0.5} particleSize={1.5} lerpSpeed={0.1} color="#a47148" autoAnimate particleVariance={1} rotationSpeed={0} depthFactor={1} pulseSpeed={3} particleShape="capsule" fieldStrength={10} />
         </div>
         <div className="container relative z-10 mx-auto grid grid-cols-1 items-center gap-16 px-6 pb-24 pt-36 md:pb-28 md:pt-40 lg:grid-cols-[1fr_1.05fr]">
           <div>
@@ -179,8 +301,13 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-[440px_1fr] gap-10 lg:gap-16 items-center">
 
-            {/* LEFT : ONLY HEADING + SUB HEADING */}
-            <div>
+            {/* LEFT : HEADING + SUB HEADING */}
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#D97A3F]">
                 <span className="h-px w-8 bg-[#D97A3F]/40" /> Get started
               </span>
@@ -204,57 +331,43 @@ export default function Home() {
                 </div>
               </div>
 
-              <Button onClick={() => setActiveEntry(ENTRY_POINTS[activeIndex])} className="mt-8 rounded-full bg-[#1E2A22] px-7 py-6 text-white hover:bg-black">
-                Start with {ENTRY_POINTS[activeIndex].label} <ArrowRight className="ml-2 h-4 w-4" />
+              <Button onClick={() => setActiveEntry(ENTRY_POINTS[activeIndex])} className="mt-8 rounded-full bg-[#1E2A22] px-7 py-6 text-white hover:bg-black overflow-hidden">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={ENTRY_POINTS[activeIndex].key}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="inline-flex items-center"
+                  >
+                    Start with {ENTRY_POINTS[activeIndex].label} <ArrowRight className="ml-2 h-4 w-4" />
+                  </motion.span>
+                </AnimatePresence>
               </Button>
               <p className="mt-3 font-mono text-xs text-[#1E2A22]/40">Hover images on the right to preview • Click to open</p>
-            </div>
+            </motion.div>
 
             {/* RIGHT : IMAGE ACCORDION WITH DETAILS */}
-            <div className="w-full">
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="w-full"
+            >
               {/* Desktop */}
               <div className="hidden md:flex h-[500px] w-full gap-3">
-                {ENTRY_POINTS.map((entry, i) => {
-                  const isActive = i === activeIndex
-                  const Icon = entry.icon
-                  return (
-                    <button
-                      key={entry.key}
-                      onMouseEnter={() => setActiveIndex(i)}
-                      onFocus={() => setActiveIndex(i)}
-                      onClick={() => isActive ? setActiveEntry(entry) : setActiveIndex(i)}
-                      className={`group relative overflow-hidden rounded-[28px] border text-left transition-all duration-500 ${isActive ? "flex-[3.5] border-[#2F6F4E]/30 shadow-xl" : "flex-[0.65] max-w-[84px] border-[#1E2A22]/10 hover:border-[#1E2A22]/20"
-                        }`}
-                    >
-                      <img src={entry.image} alt={entry.label} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" />
-                      <div className={`absolute inset-0 ${isActive ? "bg-gradient-to-t from-[#1E2A22]/90 via-[#1E2A22]/35 to-transparent" : "bg-gradient-to-t from-[#1E2A22]/70 via-[#1E2A22]/15 to-transparent"}`} />
-
-                      <div className="absolute left-3 right-3 top-3 flex items-center justify-between">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-black/5"><Icon className="h-4 w-4 text-[#2F6F4E]" /></div>
-                        {isActive && entry.popular && <span className="rounded-full bg-[#D97A3F] px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-white">Popular</span>}
-                      </div>
-
-                      <AnimatePresence mode="wait">
-                        {isActive ? (
-                          <motion.div key="active" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="absolute inset-x-4 bottom-4">
-                            <span className="font-mono text-[10px] uppercase tracking-widest text-white/60">0{i + 1} — {entry.key}</span>
-                            <h4 className="mt-1 font-serif text-[22px] font-medium leading-none text-white">{entry.label}</h4>
-                            <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/80">{entry.copy}</p>
-                            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-[#1E2A22] shadow">
-                              Open <ArrowRight className="h-3.5 w-3.5" />
-                            </span>
-                          </motion.div>
-                        ) : (
-                          <motion.div key="inactive" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 flex flex-col items-center justify-end pb-6">
-                            <span className="mb-3 h-7 w-px bg-white/40" />
-                            <span className="text-center font-serif text-sm font-medium leading-tight text-white [writing-mode:vertical-lr] rotate-180 drop-shadow">{entry.label}</span>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {isActive && <div className="absolute bottom-0 left-4 right-4 h-[3px] rounded-full bg-[#D97A3F]" />}
-                    </button>
-                  )
-                })}
+                {ENTRY_POINTS.map((entry, i) => (
+                  <EntryPanel
+                    key={entry.key}
+                    entry={entry}
+                    index={i}
+                    isActive={i === activeIndex}
+                    onActivate={() => setActiveIndex(i)}
+                    onOpen={() => setActiveEntry(entry)}
+                  />
+                ))}
               </div>
 
               {/* Mobile */}
@@ -263,18 +376,45 @@ export default function Home() {
                   const isActive = i === activeIndex
                   const Icon = entry.icon
                   return (
-                    <button key={entry.key} onClick={() => isActive ? setActiveEntry(entry) : setActiveIndex(i)} className={`relative overflow-hidden rounded-[22px] border text-left transition-all duration-500 ${isActive ? "h-[360px] border-[#2F6F4E]/30 shadow-lg" : "h-[72px] border-[#1E2A22]/10"}`}>
+                    <motion.button
+                      key={entry.key}
+                      layout
+                      onClick={() => (isActive ? setActiveEntry(entry) : setActiveIndex(i))}
+                      animate={{ height: isActive ? 360 : 72 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 32 }}
+                      className={`relative overflow-hidden rounded-[22px] border text-left ${isActive ? "border-[#2F6F4E]/30 shadow-lg" : "border-[#1E2A22]/10"}`}
+                    >
                       <img src={entry.image} alt={entry.label} className="absolute inset-0 h-full w-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1E2A22]/85 via-[#1E2A22]/30 to-transparent" />
                       <div className="absolute inset-0 flex flex-col justify-between p-4">
-                        <div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow"><Icon className="h-4 w-4 text-[#2F6F4E]" /></div><span className="font-serif text-base font-medium text-white">{entry.label}</span></div><span className="font-mono text-xs text-white/60">0{i + 1}</span></div>
-                        {isActive && <div className="space-y-2"><p className="text-sm text-white/80">{entry.copy}</p><span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-[#1E2A22]">Continue <ArrowRight className="h-3.5 w-3.5" /></span></div>}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow"><Icon className="h-4 w-4 text-[#2F6F4E]" /></div>
+                            <span className="font-serif text-base font-medium text-white">{entry.label}</span>
+                          </div>
+                          <span className="font-mono text-xs text-white/60">0{i + 1}</span>
+                        </div>
+                        <AnimatePresence>
+                          {isActive && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="space-y-2"
+                            >
+                              <p className="text-sm text-white/80">{entry.copy}</p>
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-[#1E2A22]">
+                                Continue <ArrowRight className="h-3.5 w-3.5" />
+                              </span>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </button>
+                    </motion.button>
                   )
                 })}
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </div>

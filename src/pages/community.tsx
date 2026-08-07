@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import Antigravity from "@/components/Antigravity"
+import { useToast } from '@/hooks/use-toast';
 
 import {
   Heart,
@@ -45,7 +46,7 @@ function BlueprintGrid({ className = "" }: { className?: string }) {
     <svg className={`pointer-events-none absolute inset-0 h-full w-full ${className}`} xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="cm-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M40 0H0V40" fill="none" stroke="#2F6F4E" strokeOpacity="0.07" strokeWidth="1" />
+          <path d="M40 0H0V40" fill="none" stroke="#a47148" strokeOpacity="0.07" strokeWidth="1" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#cm-grid)" />
@@ -56,7 +57,7 @@ function BlueprintGrid({ className = "" }: { className?: string }) {
 function Avatar({ initials, ring = false }: { initials: string; ring?: boolean }) {
   return (
     <div
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border font-serif text-sm font-semibold ${ring ? "border-[#2F6F4E] bg-[#2F6F4E]/10 text-[#2F6F4E]" : "border-[#1E2A22]/15 bg-[#D97A3F]/10 text-[#D97A3F]"
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border font-serif text-sm font-semibold ${ring ? "border-[#a47148] bg-[#a47148]/10 text-[#a47148]" : "border-[#1E2A22]/15 bg-[#D97A3F]/10 text-[#D97A3F]"
         }`}
     >
       {initials}
@@ -156,7 +157,7 @@ function CommunityHero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#2F6F4E]/30 bg-white px-3 py-1.5 text-[#2F6F4E]"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#a47148]/30 bg-white px-3 py-1.5 text-[#a47148]"
           >
             <Users className="h-3.5 w-3.5" />
             <span className="font-mono text-xs uppercase tracking-wider">6,200+ builders posting live</span>
@@ -168,7 +169,7 @@ function CommunityHero() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-serif text-4xl font-medium leading-[1.08] tracking-tight md:text-6xl"
           >
-            See what people are <span className="italic text-[#2F6F4E]">building</span>, today.
+            See what people are <span className="italic text-[#a47148]">building</span>, today.
           </motion.h1>
 
           <motion.p
@@ -242,10 +243,20 @@ export default function Community() {
   const [activeTab, setActiveTab] = useState<"For you" | "Following" | "Trending">("For you")
   const [attachedImage, setAttachedImage] = useState<{ name: string; url: string } | null>(null)
   const [attachedPlan, setAttachedPlan] = useState<{ name: string } | null>(null)
+  const [feedPosts, setFeedPosts] = useState(POSTS)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const planInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
 
-  const toggleLike = (id: number) => setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
+  const toggleLike = (id: number) => {
+    setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
+    setFeedPosts(posts => posts.map(p => {
+      if (p.id === id) {
+        return { ...p, likes: p.likes + (liked[id] ? -1 : 1) }
+      }
+      return p
+    }))
+  }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -259,6 +270,33 @@ export default function Community() {
     setAttachedPlan({ name: file.name })
   }
 
+  const handlePost = () => {
+    if (!postText.trim() && !attachedImage && !attachedPlan) return
+    const newPost = {
+      id: Date.now(),
+      user: "Current Builder",
+      handle: "@me",
+      avatar: "ME",
+      verified: true,
+      time: "Just now",
+      tag: "Build log",
+      content: postText,
+      image: attachedImage ? attachedImage.url : null,
+      likes: 0,
+      comments: 0,
+      clones: 0,
+      topComment: null
+    }
+    setFeedPosts([newPost, ...feedPosts])
+    setPostText("")
+    setAttachedImage(null)
+    setAttachedPlan(null)
+    toast({
+      title: "Post published!",
+      description: "Your build log update has been added to the live feed.",
+    })
+  }
+
   return (
     <div className="relative min-h-screen w-full bg-[#FAF8F3] text-[#1E2A22]">
       <CommunityHero />
@@ -269,7 +307,7 @@ export default function Community() {
       <div className="relative z-10 border-b border-[#1E2A22]/10 bg-[#FAF8F3]/90 backdrop-blur">
         <div className="container mx-auto flex flex-wrap items-center justify-between gap-4 px-4 py-4">
           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#1E2A22]/50">
-            <span className="h-2 w-2 rounded-full bg-[#2F6F4E]" />
+            <span className="h-2 w-2 rounded-full bg-[#a47148]" />
             Live feed
           </div>
           <div className="flex items-center gap-1 rounded-full border border-[#1E2A22]/10 bg-white p-1">
@@ -282,7 +320,7 @@ export default function Community() {
                 {activeTab === tab && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 rounded-full bg-[#2F6F4E]"
+                    className="absolute inset-0 rounded-full bg-[#a47148]"
                     transition={{
                       type: "spring",
                       stiffness: 400,
@@ -392,7 +430,7 @@ export default function Community() {
                       )}
                       {attachedPlan && (
                         <div className="flex items-center gap-2 rounded-xl border border-[#1E2A22]/10 bg-[#FAF8F3] px-3 py-2">
-                          <FileText className="h-4 w-4 shrink-0 text-[#2F6F4E]" />
+                          <FileText className="h-4 w-4 shrink-0 text-[#a47148]" />
                           <span className="max-w-[140px] truncate text-xs text-[#1E2A22]/70">
                             {attachedPlan.name}
                           </span>
@@ -436,7 +474,7 @@ export default function Community() {
                         <FileUp className="h-4 w-4" /> Attach plan
                       </Button>
                     </div>
-                    <Button className="rounded-full bg-[#D97A3F] px-6 font-semibold text-white hover:bg-[#c66a30]">
+                    <Button onClick={handlePost} className="rounded-full bg-[#D97A3F] px-6 font-semibold text-white hover:bg-[#c66a30]">
                       Post
                     </Button>
                   </div>
@@ -446,7 +484,7 @@ export default function Community() {
 
             {/* Posts */}
             <div className="space-y-6">
-              {POSTS.map((post) => (
+              {feedPosts.map((post) => (
                 <div key={post.id} className="rounded-3xl border border-[#1E2A22]/10 bg-white p-6 shadow-sm">
                   <div className="flex items-start gap-4">
                     <Avatar initials={post.avatar} ring={post.verified} />
@@ -454,7 +492,7 @@ export default function Community() {
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                           <span className="font-semibold">{post.user}</span>
-                          {post.verified && <BadgeCheck className="h-4 w-4 shrink-0 text-[#2F6F4E]" />}
+                          {post.verified && <BadgeCheck className="h-4 w-4 shrink-0 text-[#a47148]" />}
                           <span className="truncate text-sm text-[#1E2A22]/45">{post.handle}</span>
                           <span className="shrink-0 text-sm text-[#1E2A22]/45">· {post.time}</span>
                         </div>
@@ -478,18 +516,18 @@ export default function Community() {
                               }`}
                           >
                             <Heart className={`h-5 w-5 ${liked[post.id] ? "fill-[#D97A3F]" : ""}`} />
-                            <span className="text-sm font-medium">{post.likes + (liked[post.id] ? 1 : 0)}</span>
+                            <span className="text-sm font-medium">{post.likes}</span>
                           </button>
-                          <button className="flex items-center gap-2 transition-colors hover:text-[#2F6F4E]">
+                          <button className="flex items-center gap-2 transition-colors hover:text-[#a47148]" onClick={() => toast({ title: "Comments Section", description: "Comments are disabled for this draft archive." })}>
                             <MessageSquare className="h-5 w-5" />
                             <span className="text-sm font-medium">{post.comments}</span>
                           </button>
-                          <button className="flex items-center gap-2 transition-colors hover:text-[#2F6F4E]">
+                          <button className="flex items-center gap-2 transition-colors hover:text-[#a47148]" onClick={() => toast({ title: "Blueprint cloned!", description: "This layout has been added to your draft repositories." })}>
                             <GitFork className="h-5 w-5" />
                             <span className="text-sm font-medium">{post.clones}</span>
                           </button>
                         </div>
-                        <button className="transition-colors hover:text-[#2F6F4E]">
+                        <button className="transition-colors hover:text-[#a47148]" onClick={() => toast({ title: "Share Link", description: "Design project URL copied to clipboard." })}>
                           <Share2 className="h-5 w-5" />
                         </button>
                       </div>
@@ -507,7 +545,7 @@ export default function Community() {
             </div>
 
             <div className="flex justify-center">
-              <Button variant="outline" className="rounded-full border-[#1E2A22]/20 px-8 text-[#1E2A22] hover:bg-white">
+              <Button variant="outline" className="rounded-full border-[#1E2A22]/20 px-8 text-[#1E2A22] hover:bg-white" onClick={() => toast({ title: "Loading builds...", description: "Pulling design feeds from open-source repository streams." })}>
                 Load more builds
               </Button>
             </div>
@@ -524,7 +562,7 @@ export default function Community() {
               <p className="mt-2 text-sm text-[#FAF8F3]/70">
                 Submit a build by Sunday for a chance to be featured on the front page.
               </p>
-              <Button className="mt-4 w-full rounded-full bg-[#D97A3F] font-semibold text-white hover:bg-[#c66a30]">
+              <Button className="mt-4 w-full rounded-full bg-[#D97A3F] font-semibold text-white hover:bg-[#c66a30]" onClick={() => toast({ title: "Joined Challenge!", description: "Your sandbox layout is active. Upload a draft file to submit." })}>
                 Join challenge
               </Button>
             </div>
@@ -532,14 +570,15 @@ export default function Community() {
             {/* Trending tags */}
             <div className="rounded-3xl border border-[#1E2A22]/10 bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-[#2F6F4E]" />
+                <TrendingUp className="h-4 w-4 text-[#a47148]" />
                 <h3 className="font-serif text-lg font-medium">Trending tags</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {TAGS.map((tag) => (
                   <span
                     key={tag.name}
-                    className="cursor-pointer rounded-full bg-[#FAF8F3] px-3 py-1.5 text-sm font-medium text-[#1E2A22]/75 transition-colors hover:bg-[#2F6F4E]/10 hover:text-[#2F6F4E]"
+                    onClick={() => toast({ title: "Tag Selected", description: `Filtering feed by ${tag.name}...` })}
+                    className="cursor-pointer rounded-full bg-[#FAF8F3] px-3 py-1.5 text-sm font-medium text-[#1E2A22]/75 transition-colors hover:bg-[#a47148]/10 hover:text-[#a47148]"
                   >
                     {tag.name} <span className="text-[#1E2A22]/35">· {tag.count}</span>
                   </span>
@@ -560,7 +599,7 @@ export default function Community() {
                         <div className="text-xs text-[#1E2A22]/45">{d.followers} followers</div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="h-8 rounded-full border-[#1E2A22]/20 text-[#1E2A22]">
+                    <Button variant="outline" size="sm" className="h-8 rounded-full border-[#1E2A22]/20 text-[#1E2A22]" onClick={() => toast({ title: "User followed", description: `You will now receive updates from ${d.name}.` })}>
                       Follow
                     </Button>
                   </div>
@@ -574,7 +613,7 @@ export default function Community() {
                 <h3 className="font-serif text-lg font-medium">Your projects</h3>
                 <button
                   onClick={() => planInputRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-full border border-[#1E2A22]/15 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wide text-[#2F6F4E] hover:bg-[#2F6F4E]/10"
+                  className="flex items-center gap-1.5 rounded-full border border-[#1E2A22]/15 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wide text-[#a47148] hover:bg-[#a47148]/10"
                 >
                   <FolderPlus className="h-3.5 w-3.5" /> Add file
                 </button>

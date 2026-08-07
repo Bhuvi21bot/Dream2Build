@@ -7,6 +7,10 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Layout } from '@/components/layout';
 import { Home, Products, Pricing, Community, Marketplace, About } from '@/pages/index';
 import { lazy, Suspense } from 'react';
+import { SmartWizard, ImportPlan, Templates, HireDesigner } from '@/pages/entry-pages';
+import { AIFloorPlannerPage, InteriorAIPage, ClimateEnergyPage, LiveCostEstimatorPage, MaterialBOQPage } from '@/pages/ai-tools';
+import { DesignGitRepo } from '@/pages/design-git-repo';
+import { DesignWorkspace } from '@/pages/design-workspace';
 
 const Planner = lazy(() => import('@/pages/planner'));
 
@@ -32,6 +36,30 @@ function Router() {
             <Route path="/community" component={Community} />
             <Route path="/marketplace" component={Marketplace} />
             <Route path="/about" component={About} />
+            
+            {/* Entry point routes */}
+            <Route path="/wizard" component={SmartWizard} />
+            <Route path="/import" component={ImportPlan} />
+            <Route path="/templates" component={Templates} />
+            <Route path="/designers" component={HireDesigner} />
+            
+            {/* AI Tools routes */}
+            <Route path="/ai-floor-planner" component={AIFloorPlannerPage} />
+            <Route path="/floor-planner" component={AIFloorPlannerPage} />
+            <Route path="/interior-ai" component={InteriorAIPage} />
+            <Route path="/climate-energy" component={ClimateEnergyPage} />
+            <Route path="/cost-estimator" component={LiveCostEstimatorPage} />
+            <Route path="/boq" component={MaterialBOQPage} />
+            
+            {/* Git design repo routes */}
+            <Route path="/repo" component={DesignGitRepo} />
+            <Route path="/marketplace/repo" component={DesignGitRepo} />
+            
+            {/* Dynamic design workspace routes */}
+            <Route path="/design/:category">
+              {(params) => <DesignWorkspace category={params.category} />}
+            </Route>
+
             <Route component={NotFound} />
           </Switch>
         </Layout>

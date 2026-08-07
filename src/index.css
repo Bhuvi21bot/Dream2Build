@@ -67,7 +67,7 @@
 
   --border: 30 30% 85%;
   --input: 30 30% 85%;
-  --ring: 28 67% 44%;
+  --ring: 27 39% 46%;
 
   --card: 30 60% 99%;
   --card-foreground: 24 53% 12%;
@@ -77,16 +77,16 @@
   --popover-foreground: 24 53% 12%;
   --popover-border: 30 30% 88%;
 
-  --primary: 28 67% 44%;
+  --primary: 27 39% 46%; /* #a47148 (Clay/Dark Brown) */
   --primary-foreground: 30 56% 98%;
 
-  --secondary: 221 83% 53%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 29 41% 55%; /* #bc8a5f (Medium Tan/Brown) */
+  --secondary-foreground: 30 56% 98%;
 
   --muted: 30 40% 90%;
   --muted-foreground: 24 20% 40%;
 
-  --accent: 32 63% 62%;
+  --accent: 28 52% 65%; /* #d4a276 (Warm Tan/Sand) */
   --accent-foreground: 24 53% 12%;
 
   --destructive: 0 84% 60%;
@@ -137,7 +137,7 @@
 
   --border: 24 38% 20%;
   --input: 24 38% 20%;
-  --ring: 32 63% 62%;
+  --ring: 28 52% 65%;
 
   --card: 23 53% 12%;
   --card-foreground: 30 56% 90%;
@@ -147,16 +147,16 @@
   --popover-foreground: 30 56% 90%;
   --popover-border: 24 38% 25%;
 
-  --primary: 32 63% 62%;
+  --primary: 28 52% 65%; /* #d4a276 (Warm Tan/Sand) */
   --primary-foreground: 23 58% 7%;
 
-  --secondary: 221 83% 53%;
+  --secondary: 29 41% 55%; /* #bc8a5f (Medium Tan/Brown) */
   --secondary-foreground: 0 0% 100%;
 
   --muted: 24 38% 15%;
   --muted-foreground: 30 20% 70%;
 
-  --accent: 24 38% 36%;
+  --accent: 27 39% 46%; /* #a47148 (Clay/Dark Brown) */
   --accent-foreground: 30 56% 90%;
 
   --destructive: 0 84% 60%;

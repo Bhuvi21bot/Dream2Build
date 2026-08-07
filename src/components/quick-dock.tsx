@@ -76,7 +76,7 @@ function HoveredLink({ href, onClick, children }: { href: string; onClick?: () =
     <DockLink
       href={href}
       onClick={onClick}
-      className="block rounded-lg px-2 py-1.5 text-sm text-[#1E2A22]/70 transition-colors hover:bg-[#2F6F4E]/8 hover:text-[#1E2A22]"
+      className="block rounded-lg px-2 py-1.5 text-sm text-[#1E2A22]/70 transition-colors hover:bg-[#a47148]/8 hover:text-[#1E2A22]"
     >
       {children}
     </DockLink>
@@ -90,7 +90,7 @@ type Group = { title: string; items: LinkItem[] }
 
 function NewBadge() {
   return (
-    <span className="ml-2 shrink-0 rounded-full bg-[#2F6F4E] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase leading-none tracking-wide text-white">
+    <span className="ml-2 shrink-0 rounded-full bg-[#a47148] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase leading-none tracking-wide text-white">
       New
     </span>
   )
@@ -108,7 +108,7 @@ function GroupBlock({ group, onNavigate }: { group: Group; onNavigate?: () => vo
             <DockLink
               href={item.href}
               onClick={onNavigate}
-              className="flex items-center rounded-lg px-2 py-1.5 text-sm text-[#1E2A22]/75 transition-colors hover:bg-[#2F6F4E]/8 hover:text-[#1E2A22]"
+              className="flex items-center rounded-lg px-2 py-1.5 text-sm text-[#1E2A22]/75 transition-colors hover:bg-[#a47148]/8 hover:text-[#1E2A22]"
             >
               {item.title}
               {item.isNew && <NewBadge />}
@@ -123,54 +123,54 @@ function GroupBlock({ group, onNavigate }: { group: Group; onNavigate?: () => vo
 const USE_CASES_GROUPS: Group[] = [
   {
     title: "House", items: [
-      { title: "Home Design", href: "https://planner5d.com/use/home-design-software" },
-      { title: "Home Remodeling", href: "https://planner5d.com/use/home-remodeling-software" },
+      { title: "Home Design", href: "/design/home-design" },
+      { title: "Home Remodeling", href: "/design/home-remodeling" },
     ]
   },
   {
     title: "Floor plan", items: [
-      { title: "Floor Plan Creator", href: "https://planner5d.com/use/free-floor-plan-creator" },
-      { title: "2D Floor Plan", href: "https://planner5d.com/use/2d-floor-plan" },
-      { title: "3D Floor Plan", href: "https://planner5d.com/use/3D-floor-plan" },
-      { title: "Real Estate Floor Plan", href: "https://planner5d.com/use/real-estate-floor-plan" },
+      { title: "Floor Plan Creator", href: "/design/floor-plan" },
+      { title: "2D Floor Plan", href: "/design/floor-plan" },
+      { title: "3D Floor Plan", href: "/design/floor-plan" },
+      { title: "Real Estate Floor Plan", href: "/design/floor-plan" },
     ]
   },
   {
     title: "Kitchen", items: [
-      { title: "Kitchen Planner", href: "https://planner5d.com/use/kitchen-planner-tool" },
+      { title: "Kitchen Planner", href: "/design/kitchen" },
     ]
   },
   {
     title: "Bathroom", items: [
-      { title: "Bathroom Planner", href: "https://planner5d.com/use/bathroom-planner-tool" },
-      { title: "Bathroom Remodeling", href: "https://planner5d.com/use/bathroom-remodeling-tool" },
+      { title: "Bathroom Planner", href: "/design/bathroom" },
+      { title: "Bathroom Remodeling", href: "/design/bathroom" },
     ]
   },
   {
     title: "Room", items: [
-      { title: "Room Planner", href: "https://planner5d.com/use/room-planner-tool" },
-      { title: "AI Room Design", href: "https://planner5d.com/use/ai-room-design" },
-      { title: "Kids Room Layout", href: "https://planner5d.com/use/kids-room-layout" },
+      { title: "Room Planner", href: "/design/room" },
+      { title: "AI Room Design", href: "/design/room" },
+      { title: "Kids Room Layout", href: "/design/room" },
     ]
   },
   {
     title: "Exterior", items: [
-      { title: "Landscape Design Software", href: "https://planner5d.com/use/landscape-design-software" },
-      { title: "Deck Design", href: "https://planner5d.com/use/deck-design" },
-      { title: "Garden Planner", href: "https://planner5d.com/use/garden-planner" },
-      { title: "Garage Planner", href: "https://planner5d.com/use/garage-plans" },
+      { title: "Landscape Design Software", href: "/design/landscape" },
+      { title: "Deck Design", href: "/design/landscape" },
+      { title: "Garden Planner", href: "/design/landscape" },
+      { title: "Garage Planner", href: "/design/landscape" },
     ]
   },
   {
     title: "Architecture", items: [
-      { title: "Architecture Design Software", href: "https://planner5d.com/use/architecture-design-software" },
-      { title: "Blueprint Maker", href: "https://planner5d.com/use/blueprint-maker" },
+      { title: "Architecture Design Software", href: "/design/architecture" },
+      { title: "Blueprint Maker", href: "/design/architecture" },
     ]
   },
   {
     title: "Office", items: [
-      { title: "Office Planner", href: "https://planner5d.com/use/office-design" },
-      { title: "Home Office Design", href: "https://planner5d.com/use/home-office-design" },
+      { title: "Office Planner", href: "/design/office" },
+      { title: "Home Office Design", href: "/design/office" },
     ]
   },
 ]
@@ -178,21 +178,21 @@ const USE_CASES_GROUPS: Group[] = [
 const RESOURCES_GROUPS: Group[] = [
   {
     title: "Learn", items: [
-      { title: "Online Interior Design School", href: "https://planner5d.com/interior-design-courses" },
-      { title: "Interior Design Blog", href: "https://planner5d.com/blog" },
-      { title: "Design Battle", href: "https://planner5d.com/contests" },
-      { title: "Webinars", href: "https://planner5d.com/webinars", isNew: true },
-      { title: "Help Center", href: "https://support.planner5d.com/" },
+      { title: "Online Interior Design School", href: "/resources/school" },
+      { title: "Interior Design Blog", href: "/resources/blog" },
+      { title: "Design Battle", href: "/resources/contests" },
+      { title: "Webinars", href: "/resources/webinars", isNew: true },
+      { title: "Help Center", href: "/resources/help" },
     ]
   },
   {
     title: "Explore", items: [
-      { title: "Hire an Interior Designer", href: "https://planner5d.com/experts" },
-      { title: "Top Interior Designers", href: "https://planner5d.com/gallery#top-designers" },
-      { title: "Floor Plans Gallery", href: "https://planner5d.com/gallery/floorplans" },
-      { title: "Furniture Shop", href: "https://shop.planner5d.com/" },
-      { title: "Home Repair Estimator", href: "https://planner5d.com/repairestimator" },
-      { title: "Home Plans", href: "https://planner5d.com/homeplans" },
+      { title: "Hire an Interior Designer", href: "/designers" },
+      { title: "Top Interior Designers", href: "/designers" },
+      { title: "Floor Plans Gallery", href: "/marketplace" },
+      { title: "Furniture Shop", href: "/marketplace" },
+      { title: "Home Repair Estimator", href: "/cost-estimator" },
+      { title: "Home Plans", href: "/marketplace" },
     ]
   },
 ]
@@ -200,12 +200,12 @@ const RESOURCES_GROUPS: Group[] = [
 const ENTERPRISE_GROUPS: Group[] = [
   {
     title: "Enterprise", items: [
-      { title: "Enterprise Solutions", href: "https://planner5d.com/business" },
-      { title: "3D Product Configurator", href: "https://planner5d.com/configurator" },
-      { title: "Solutions for Schools", href: "https://planner5d.com/education" },
-      { title: "Partner Program", href: "https://planner5d.com/partners" },
-      { title: "API Integration", href: "https://planner5d.com/business/api-integrations", isNew: true },
-      { title: "Property Scan", href: "https://planner5d.com/property-scan" },
+      { title: "Enterprise Solutions", href: "/enterprise" },
+      { title: "3D Product Configurator", href: "/configurator" },
+      { title: "Solutions for Schools", href: "/education" },
+      { title: "Partner Program", href: "/partners" },
+      { title: "API Integration", href: "/api-integration", isNew: true },
+      { title: "Property Scan", href: "/property-scan" },
     ]
   },
 ]
@@ -249,7 +249,7 @@ function MenuItem({
     <div onMouseEnter={() => setActive(item)} className="relative">
       <button
         aria-expanded={isOpen}
-        className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-colors ${isOpen ? "bg-[#2F6F4E]/12 text-[#2F6F4E]" : "text-[#1E2A22]/55 hover:bg-[#2F6F4E]/8 hover:text-[#1E2A22]"
+        className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-colors ${isOpen ? "bg-[#a47148]/12 text-[#a47148]" : "text-[#1E2A22]/55 hover:bg-[#a47148]/8 hover:text-[#1E2A22]"
           }`}
       >
         <Icon className="h-[18px] w-[18px]" />
@@ -301,7 +301,7 @@ export function QuickDock() {
       initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="pointer-events-auto fixed right-4 top-1/2 z-[900] hidden -translate-y-1/2 sm:flex"
+      className="pointer-events-auto fixed right-4 top-1/2 z-[900] flex -translate-y-1/2 sm:flex"
     >
       <Menu setActive={setActive}>
         <MenuItem setActive={setActive} active={active} item="Use cases" icon={Compass} panelClassName="min-w-[640px]">
@@ -325,17 +325,17 @@ export function QuickDock() {
             </div>
             <HoveredLink href="/resources/help" onClick={close}>
               <span className="flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-[#2F6F4E]" /> Help center
+                <HelpCircle className="h-4 w-4 text-[#a47148]" /> Help center
               </span>
             </HoveredLink>
             <HoveredLink href="/resources/blog" onClick={close}>
               <span className="flex items-center gap-2">
-                <MessageSquareText className="h-4 w-4 text-[#2F6F4E]" /> Contact support
+                <MessageSquareText className="h-4 w-4 text-[#a47148]" /> Contact support
               </span>
             </HoveredLink>
             <HoveredLink href="https://status.dream2build.app" onClick={close}>
               <span className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-[#2F6F4E]" /> System status
+                <Activity className="h-4 w-4 text-[#a47148]" /> System status
               </span>
             </HoveredLink>
           </div>
@@ -348,12 +348,12 @@ export function QuickDock() {
             </div>
             <HoveredLink href="/account/projects" onClick={close}>
               <span className="flex items-center gap-2">
-                <FolderKanban className="h-4 w-4 text-[#2F6F4E]" /> Your projects
+                <FolderKanban className="h-4 w-4 text-[#a47148]" /> Your projects
               </span>
             </HoveredLink>
             <HoveredLink href="/account/settings" onClick={close}>
               <span className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-[#2F6F4E]" /> Settings
+                <Settings className="h-4 w-4 text-[#a47148]" /> Settings
               </span>
             </HoveredLink>
             <div className="my-2 border-t border-[#1E2A22]/10" />
