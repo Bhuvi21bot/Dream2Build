@@ -272,7 +272,7 @@ export default function Home() {
               Draw a floor plan, furnish it from a full catalog, and render it in HD — all in one browser tab. No download, no drafting experience required.
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-9 flex flex-wrap gap-3">
-              <Button size="lg" className="rounded-full bg-[#D97A3F] px-7 text-white hover:bg-[#c66a30]">Start designing <ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <Button size="lg" className="rounded-full bg-[#D97A3F] px-7 text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>Start designing <ArrowRight className="ml-2 h-4 w-4" /></Button>
               <Button size="lg" variant="outline" className="rounded-full border-[#1E2A22]/20 px-7">See how it works</Button>
             </motion.div>
             <div className="mt-8 flex items-center gap-2 font-mono text-xs text-[#1E2A22]/60">
@@ -492,7 +492,7 @@ export default function Home() {
       </section>
 
       <section className="relative overflow-hidden bg-[#1E2A22] py-28 text-[#FAF8F3]"><BlueprintGrid className="opacity-20 [&_path]:stroke-[#FAF8F3]" />
-        <div className="container relative z-10 mx-auto px-6 text-center"><h2 className="mb-6 font-serif text-4xl font-medium md:text-6xl">Your dream home is one draft away.</h2><p className="mx-auto mb-10 max-w-2xl text-lg text-[#FAF8F3]/70">Join 90M+ people already designing on Dream2Build.</p><Button size="lg" className="rounded-full bg-[#D97A3F] px-8 text-base font-semibold text-white hover:bg-[#c66a30]">Start designing, free <ArrowRight className="ml-2 h-4 w-4" /></Button><p className="mt-6 flex items-center justify-center gap-4 font-mono text-xs uppercase tracking-wider text-[#FAF8F3]/50"><span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> No card required</span><span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> 3 free projects</span></p></div>
+        <div className="container relative z-10 mx-auto px-6 text-center"><h2 className="mb-6 font-serif text-4xl font-medium md:text-6xl">Your dream home is one draft away.</h2><p className="mx-auto mb-10 max-w-2xl text-lg text-[#FAF8F3]/70">Join 90M+ people already designing on Dream2Build.</p><Button size="lg" className="rounded-full bg-[#D97A3F] px-8 text-base font-semibold text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>Start designing, free <ArrowRight className="ml-2 h-4 w-4" /></Button><p className="mt-6 flex items-center justify-center gap-4 font-mono text-xs uppercase tracking-wider text-[#FAF8F3]/50"><span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> No card required</span><span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> 3 free projects</span></p></div>
       </section>
     </div>
   )

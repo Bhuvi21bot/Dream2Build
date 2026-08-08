@@ -63,12 +63,17 @@ export type FloorPlanState = {
   furniture: Furniture[]
   selectedId: string | null
   activeTool: Tool
+  selectedFurnitureType: FurnitureType
+  selectedRoomType: RoomType
   gridSize: number
   snapToGrid: boolean
   showGrid: boolean
   scale: number // px per cm
   view: 'split' | '2d' | '3d'
   cameraMode: 'orbit' | 'firstperson' | 'top' | 'dollhouse'
+
+  setSelectedFurnitureType: (type: FurnitureType) => void
+  setSelectedRoomType: (type: RoomType) => void
 
   addWall: (wall: Wall) => void
   updateWall: (id: string, wall: Partial<Wall>) => void

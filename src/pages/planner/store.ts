@@ -12,12 +12,17 @@ export const usePlannerStore = create<FloorPlanState>((set) => ({
   furniture: [],
   selectedId: null,
   activeTool: 'select',
+  selectedFurnitureType: 'sofa',
+  selectedRoomType: 'living',
   gridSize: 20,
   snapToGrid: true,
   showGrid: true,
   scale: 1, // px per cm
   view: '2d',
   cameraMode: 'orbit',
+  
+  setSelectedFurnitureType: (type) => set({ selectedFurnitureType: type }),
+  setSelectedRoomType: (type) => set({ selectedRoomType: type }),
   
   addWall: (wall) => set((state) => ({ walls: [...state.walls, wall] })),
   updateWall: (id, wall) => set((state) => ({ walls: state.walls.map(w => w.id === id ? { ...w, ...wall } : w) })),

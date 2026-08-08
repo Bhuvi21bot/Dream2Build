@@ -255,7 +255,7 @@ export default function Products() {
           <p className="mx-auto mb-8 max-w-xl text-[#FAF8F3]/70">
             No add-ons to unlock, no separate tools to juggle — the whole suite is there from your first draft.
           </p>
-          <Button size="lg" className="rounded-full bg-[#D97A3F] px-8 font-semibold text-white hover:bg-[#c66a30]">
+          <Button size="lg" className="rounded-full bg-[#D97A3F] px-8 font-semibold text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>
             Start designing, free <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>

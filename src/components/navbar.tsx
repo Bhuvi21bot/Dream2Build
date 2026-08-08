@@ -97,7 +97,7 @@ export function Navbar() {
             <Button variant="ghost" className="rounded-full font-medium text-[#1E2A22]/75 hover:text-[#1E2A22]">
               Log in
             </Button>
-            <Button className="rounded-full bg-[#D97A3F] px-5 text-white hover:bg-[#c66a30]">
+            <Button className="rounded-full bg-[#D97A3F] px-5 text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>
               Start free
             </Button>
           </div>
@@ -156,7 +156,7 @@ export function Navbar() {
               <Button variant="outline" className="w-full rounded-full border-[#1E2A22]/15">
                 Log in
               </Button>
-              <Button className="w-full rounded-full bg-[#D97A3F] text-white hover:bg-[#c66a30]">
+              <Button className="w-full rounded-full bg-[#D97A3F] text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>
                 Start free
               </Button>
             </div>
