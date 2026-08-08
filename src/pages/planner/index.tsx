@@ -15,7 +15,9 @@ export default function Planner() {
 
   useEffect(() => {
     if (walls.length === 0) {
-      loadSamplePlan();
+      const params = new URLSearchParams(window.location.search);
+      const template = params.get('template') || 'oasis';
+      loadSamplePlan(template);
     }
   }, [walls.length, loadSamplePlan]);
 
@@ -34,13 +36,13 @@ export default function Planner() {
   }, []);
 
   return (
-    <div className="h-[100dvh] w-screen flex flex-col bg-[#120b05] overflow-hidden text-foreground selection:bg-amber-500/30 selection:text-amber-500">
+    <div className="h-[100dvh] w-screen flex flex-col bg-background overflow-hidden text-foreground selection:bg-amber-500/30 selection:text-amber-500">
       <PlannerNavbar />
       
       <div className="flex-1 flex overflow-hidden relative">
         <LeftSidebar />
         
-        <div className="flex-1 overflow-hidden relative bg-[#1a1008]">
+        <div className="flex-1 overflow-hidden relative bg-muted/40">
           <SplitView />
           
           <AnimatePresence>
@@ -49,7 +51,7 @@ export default function Planner() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 flex items-center justify-center bg-[#120b05]/80 backdrop-blur-sm"
+                className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
               >
                 <div className="text-center flex flex-col items-center">
                   <motion.div

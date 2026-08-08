@@ -80,7 +80,7 @@ export function FloorPlan2D() {
   };
 
   return (
-    <div className="w-full h-full bg-[#1a1008]" ref={containerRef}>
+    <div className="w-full h-full bg-muted/40" ref={containerRef}>
       {dimensions.width > 0 && (
         <Stage
           width={dimensions.width}

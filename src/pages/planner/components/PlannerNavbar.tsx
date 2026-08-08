@@ -13,10 +13,10 @@ export function PlannerNavbar() {
   };
 
   return (
-    <header className="h-14 border-b border-[#2a1a0e] bg-[#1a0f07]/90 backdrop-blur-xl flex items-center justify-between px-4 z-40">
+    <header className="h-14 border-b border-border bg-card/90 backdrop-blur-xl flex items-center justify-between px-4 z-40">
       <div className="flex items-center gap-4">
         <Link href="/">
-          <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-[#2a1a0e]">
+          <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
             <ArrowLeft className="w-5 h-5" />
           </Button>
         </Link>
@@ -31,28 +31,28 @@ export function PlannerNavbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground hover:bg-[#2a1a0e]">
+        <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground hover:bg-muted">
           <Undo className="w-4 h-4 mr-2" />
           Undo
         </Button>
-        <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground hover:bg-[#2a1a0e]">
+        <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground hover:bg-muted">
           <Redo className="w-4 h-4 mr-2" />
           Redo
         </Button>
-        <div className="w-px h-6 bg-[#2a1a0e] mx-2" />
-        <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground hover:bg-[#2a1a0e]">
+        <div className="w-px h-6 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="text-foreground/70 hover:text-foreground hover:bg-muted">
           <Save className="w-4 h-4 mr-2" />
           Save
         </Button>
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="bg-[#120b05] rounded-md p-1 border border-[#2a1a0e] flex items-center gap-1">
+        <div className="bg-background rounded-md p-1 border border-border flex items-center gap-1">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => setView('2d')}
-            className={cn("px-3 h-8", view === '2d' ? "bg-[#2a1a0e] text-amber-500" : "text-foreground/60 hover:text-foreground hover:bg-[#1a0f07]")}
+            className={cn("px-3 h-8", view === '2d' ? "bg-muted text-amber-500" : "text-foreground/60 hover:text-foreground hover:bg-muted/50")}
           >
             <LayoutPanelLeft className="w-4 h-4 mr-2" />
             2D
@@ -61,7 +61,7 @@ export function PlannerNavbar() {
             variant="ghost" 
             size="sm"
             onClick={() => setView('split')}
-            className={cn("px-3 h-8", view === 'split' ? "bg-[#2a1a0e] text-amber-500" : "text-foreground/60 hover:text-foreground hover:bg-[#1a0f07]")}
+            className={cn("px-3 h-8", view === 'split' ? "bg-muted text-amber-500" : "text-foreground/60 hover:text-foreground hover:bg-muted/50")}
           >
             <Columns2 className="w-4 h-4 mr-2" />
             Split
@@ -70,7 +70,7 @@ export function PlannerNavbar() {
             variant="ghost" 
             size="sm"
             onClick={() => setView('3d')}
-            className={cn("px-3 h-8", view === '3d' ? "bg-[#2a1a0e] text-amber-500" : "text-foreground/60 hover:text-foreground hover:bg-[#1a0f07]")}
+            className={cn("px-3 h-8", view === '3d' ? "bg-muted text-amber-500" : "text-foreground/60 hover:text-foreground hover:bg-muted/50")}
           >
             <Box className="w-4 h-4 mr-2" />
             3D
@@ -86,10 +86,10 @@ export function PlannerNavbar() {
           </Button>
         </motion.div>
         
-        <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-[#2a1a0e]">
+        <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
           <Download className="w-5 h-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-[#2a1a0e]">
+        <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-foreground hover:bg-muted">
           <Settings className="w-5 h-5" />
         </Button>
       </div>

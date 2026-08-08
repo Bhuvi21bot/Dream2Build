@@ -45,7 +45,7 @@ export function LeftSidebar() {
     <motion.div 
       initial={{ x: -100 }}
       animate={{ x: 0 }}
-      className="w-16 border-r border-[#2a1a0e] bg-[#1a0f07]/95 flex flex-col items-center py-4 z-30"
+      className="w-16 border-r border-border bg-card/95 flex flex-col items-center py-4 z-30"
     >
       <div className="flex flex-col gap-3">
         {tools.map((tool) => {
@@ -61,13 +61,13 @@ export function LeftSidebar() {
                     "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
                     isActive 
                       ? "bg-amber-500/20 text-amber-500 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.5)]" 
-                      : "text-foreground/50 hover:text-foreground hover:bg-[#2a1a0e]"
+                      : "text-foreground/50 hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <Icon className="w-5 h-5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#2a1a0e] text-foreground border-[#3a2a1e]">
+              <TooltipContent side="right" className="bg-popover text-popover-foreground border-border">
                 <p>{tool.label}</p>
               </TooltipContent>
             </Tooltip>
@@ -86,22 +86,22 @@ export function LeftSidebar() {
               <Trash2 className="w-5 h-5" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right" className="bg-[#2a1a0e] text-foreground border-[#3a2a1e]">
+          <TooltipContent side="right" className="bg-popover text-popover-foreground border-border">
             <p>Delete Selected (Del)</p>
           </TooltipContent>
         </Tooltip>
 
-        <div className="w-8 h-px bg-[#2a1a0e] mx-auto" />
+        <div className="w-8 h-px bg-border mx-auto" />
 
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
             <button
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-[#2a1a0e] transition-all"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-muted transition-all"
             >
               <Ruler className="w-5 h-5" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right" className="bg-[#2a1a0e] text-foreground border-[#3a2a1e]">
+          <TooltipContent side="right" className="bg-popover text-popover-foreground border-border">
             <p>Measurements & Ruler</p>
           </TooltipContent>
         </Tooltip>

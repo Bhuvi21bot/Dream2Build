@@ -99,5 +99,5 @@ export type FloorPlanState = {
   setScale: (scale: number) => void
 
   clearAll: () => void
-  loadSamplePlan: () => void
+  loadSamplePlan: (templateId?: string) => void
 }

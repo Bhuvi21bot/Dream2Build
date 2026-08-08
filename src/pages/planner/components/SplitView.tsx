@@ -21,8 +21,8 @@ export function SplitView() {
         <FloorPlan2D />
       </Panel>
       
-      <PanelResizeHandle className="w-1 bg-[#2a1a0e] hover:bg-amber-500/50 transition-colors flex flex-col items-center justify-center relative cursor-col-resize z-20 group">
-        <div className="h-8 w-4 bg-[#120b05] border border-[#2a1a0e] rounded flex items-center justify-center shadow-md absolute z-10 group-hover:border-amber-500/50">
+      <PanelResizeHandle className="w-1 bg-border hover:bg-amber-500/50 transition-colors flex flex-col items-center justify-center relative cursor-col-resize z-20 group">
+        <div className="h-8 w-4 bg-background border border-border rounded flex items-center justify-center shadow-md absolute z-10 group-hover:border-amber-500/50">
           <GripVertical className="w-3 h-3 text-foreground/40 group-hover:text-amber-500" />
         </div>
       </PanelResizeHandle>

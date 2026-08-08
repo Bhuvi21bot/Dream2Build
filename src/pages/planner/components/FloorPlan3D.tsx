@@ -109,7 +109,7 @@ export function FloorPlan3D() {
   const { cameraMode } = usePlannerStore();
   
   return (
-    <div className="w-full h-full bg-[#0a0502]">
+    <div className="w-full h-full bg-background">
       <Canvas shadows gl={{ antialias: true }}>
         {cameraMode === 'top' ? (
           <OrthographicCamera makeDefault position={[500, 2000, 500]} zoom={0.5} near={0.1} far={5000} />

@@ -293,7 +293,7 @@ export function Templates() {
                   <p className="mt-3 text-sm text-[#1E2A22]/70 leading-relaxed">{item.desc}</p>
                 </div>
                 <Button 
-                  onClick={() => window.location.href = "/planner"}
+                  onClick={() => window.location.href = `/planner?template=${item.id}`}
                   className="mt-6 w-full rounded-full bg-[#a47148] text-white hover:bg-[#8e603d]"
                 >
                   Use Layout <ChevronRight className="ml-1 h-4 w-4" />

@@ -46,9 +46,9 @@ export function RightSidebar() {
     <motion.div 
       initial={{ x: 300 }}
       animate={{ x: 0 }}
-      className="w-72 border-l border-[#2a1a0e] bg-[#1a0f07]/95 flex flex-col z-30"
+      className="w-72 border-l border-border bg-card/95 flex flex-col z-30"
     >
-      <div className="h-14 flex items-center px-4 border-b border-[#2a1a0e]">
+      <div className="h-14 flex items-center px-4 border-b border-border">
         <h2 className="font-semibold text-sm tracking-wide text-foreground/90 uppercase">Properties</h2>
       </div>
 
@@ -56,7 +56,7 @@ export function RightSidebar() {
         <div className="p-4 flex flex-col gap-6">
           {!selected?.element ? (
             <div className="text-center py-10">
-              <div className="w-12 h-12 rounded-full bg-[#2a1a0e] flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
                 <MousePointer2Icon className="w-5 h-5 text-foreground/40" />
               </div>
               <p className="text-sm text-foreground/50">Select an element on the canvas to view and edit its properties.</p>
@@ -89,18 +89,18 @@ export function RightSidebar() {
             </div>
           )}
 
-          <Separator className="bg-[#2a1a0e]" />
+          <Separator className="bg-border" />
 
           {/* Global Project Stats */}
           <div className="flex flex-col gap-4">
             <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-wider">Project Summary</h3>
             
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-[#120b05] border border-[#2a1a0e] rounded-lg p-3">
+              <div className="bg-background border border-border rounded-lg p-3">
                 <div className="text-xl font-mono text-foreground mb-1">{totalArea.toFixed(1)} <span className="text-xs text-foreground/50">m²</span></div>
                 <div className="text-[10px] text-foreground/50 uppercase tracking-wide">Total Area</div>
               </div>
-              <div className="bg-[#120b05] border border-[#2a1a0e] rounded-lg p-3">
+              <div className="bg-background border border-border rounded-lg p-3">
                 <div className="text-xl font-mono text-foreground mb-1">{rooms.length}</div>
                 <div className="text-[10px] text-foreground/50 uppercase tracking-wide">Rooms</div>
               </div>
@@ -109,7 +109,7 @@ export function RightSidebar() {
 
           {(view === '3d' || view === 'split') && (
             <>
-              <Separator className="bg-[#2a1a0e]" />
+              <Separator className="bg-border" />
               <div className="flex flex-col gap-4">
                 <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-wider flex items-center gap-2">
                   <Camera className="w-3 h-3" /> Camera
@@ -144,7 +144,7 @@ function CameraModeBtn({ mode, current, set, icon: Icon, label }: any) {
       className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${
         active 
           ? "bg-amber-500/10 border-amber-500/50 text-amber-500" 
-          : "bg-[#120b05] border-[#2a1a0e] text-foreground/60 hover:bg-[#2a1a0e]"
+          : "bg-background border-border text-foreground/60 hover:bg-muted"
       }`}
     >
       <Icon className="w-4 h-4" />
@@ -159,10 +159,10 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Material</Label>
         <Select value={wall.material} onValueChange={(v) => updateWall(wall.id, { material: v })}>
-          <SelectTrigger className="bg-[#120b05] border-[#2a1a0e]">
+          <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#1a0f07] border-[#2a1a0e]">
+          <SelectContent className="bg-card border-border">
             <SelectItem value="white-paint">White Paint</SelectItem>
             <SelectItem value="concrete">Exposed Concrete</SelectItem>
             <SelectItem value="brick">Red Brick</SelectItem>
@@ -206,17 +206,17 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
         <Input 
           value={room.name} 
           onChange={(e) => updateRoom(room.id, { name: e.target.value })}
-          className="bg-[#120b05] border-[#2a1a0e]"
+          className="bg-background border-border"
         />
       </div>
 
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Type</Label>
         <Select value={room.type} onValueChange={(v) => updateRoom(room.id, { type: v })}>
-          <SelectTrigger className="bg-[#120b05] border-[#2a1a0e]">
+          <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#1a0f07] border-[#2a1a0e]">
+          <SelectContent className="bg-card border-border">
             {['bedroom', 'kitchen', 'living', 'bathroom', 'balcony', 'dining', 'corridor'].map(t => (
               <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
             ))}
@@ -227,10 +227,10 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Floor Material</Label>
         <Select value={room.floorMaterial} onValueChange={(v) => updateRoom(room.id, { floorMaterial: v })}>
-          <SelectTrigger className="bg-[#120b05] border-[#2a1a0e]">
+          <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#1a0f07] border-[#2a1a0e]">
+          <SelectContent className="bg-card border-border">
             <SelectItem value="hardwood">Hardwood</SelectItem>
             <SelectItem value="tiles">Ceramic Tiles</SelectItem>
             <SelectItem value="marble">Marble</SelectItem>
@@ -263,13 +263,13 @@ function DoorProperties({ door, updateDoor }: { door: Door, updateDoor: any }) {
         <div className="flex gap-2">
           <button 
             onClick={() => updateDoor(door.id, { swingDirection: 'left' })}
-            className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'left' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-[#120b05] border-[#2a1a0e] text-foreground/60'}`}
+            className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'left' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
           >
             Left
           </button>
           <button 
             onClick={() => updateDoor(door.id, { swingDirection: 'right' })}
-            className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'right' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-[#120b05] border-[#2a1a0e] text-foreground/60'}`}
+            className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'right' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
           >
             Right
           </button>

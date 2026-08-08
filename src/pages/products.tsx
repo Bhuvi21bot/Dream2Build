@@ -1,3 +1,4 @@
+import { Link } from "wouter"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import {
@@ -207,9 +208,17 @@ export default function Products() {
                   ))}
                 </ul>
 
-                <Button variant="outline" className="mt-2 rounded-full border-[#1E2A22]/20">
-                  Try {product.title.split(" ")[0]} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href={
+                  product.id === "floor-planner" ? "/floor-planner" :
+                  product.id === "interior" ? "/interior-ai" :
+                  product.id === "climate" ? "/climate-energy" :
+                  product.id === "cost" ? "/cost-estimator" :
+                  "/boq"
+                }>
+                  <Button variant="outline" className="mt-2 rounded-full border-[#1E2A22]/20">
+                    Try {product.title.split(" ")[0]} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </motion.div>
 
               <motion.div
