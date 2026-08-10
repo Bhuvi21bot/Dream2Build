@@ -1,0 +1,226 @@
+# Prompt: Convert 2D Floor Plan to Interactive 3D House
+
+## Objective
+
+Build an AI-powered feature that converts a user-created 2D floor plan into an interactive 3D house model.
+
+The user should first design the house using a 2D editor and then click **"Generate 3D"** to instantly visualize it in a realistic 3D environment.
+
+---
+
+## Tech Stack
+
+* Next.js 16
+* React 19
+* TypeScript
+* Three.js
+* React Three Fiber
+* Drei
+* Tailwind CSS
+* shadcn/ui
+* Framer Motion
+
+---
+
+## Functional Requirements
+
+### 1. 2D Floor Plan Editor
+
+Users should be able to
+
+* Draw walls
+* Create rooms
+* Add doors
+* Add windows
+* Add stairs
+* Add furniture
+* Resize rooms
+* Drag and drop objects
+* Zoom & Pan
+
+---
+
+### 2. Convert to 3D
+
+When the user clicks **Generate 3D**
+
+Automatically
+
+* Extrude walls
+* Create floor slabs
+* Generate ceilings
+* Add realistic wall thickness
+* Create doors
+* Create windows
+* Generate roofs (optional)
+* Place furniture in the correct positions
+
+---
+
+### 3. Interactive 3D Viewer
+
+Users can
+
+* Rotate
+* Pan
+* Zoom
+* Walk inside the house
+* Switch between
+
+  * Orbit View
+  * First Person View
+  * Top View
+  * Doll House View
+
+---
+
+### 4. Realistic Rendering
+
+Include
+
+* Shadows
+* Ambient Lighting
+* Sunlight
+* HDR Environment
+* Glass Materials
+* Wooden Floors
+* Tiles
+* Wall Paint
+* Reflection
+* Bloom (subtle)
+
+---
+
+### 5. Live Synchronization
+
+Whenever the user edits the 2D plan
+
+The 3D model updates automatically without refreshing.
+
+---
+
+### 6. Room Detection
+
+Automatically detect
+
+* Bedroom
+* Kitchen
+* Living Room
+* Bathroom
+* Balcony
+* Dining Room
+
+Assign default materials and furniture accordingly.
+
+---
+
+### 7. Material System
+
+Allow users to change
+
+* Wall Paint
+* Floor Material
+* Ceiling
+* Door Material
+* Window Material
+
+Instantly update the 3D model.
+
+---
+
+### 8. Furniture Placement
+
+Place furniture automatically based on
+
+* Room type
+* Available space
+* Walking area
+* Window locations
+* Door clearance
+
+Allow manual repositioning.
+
+---
+
+### 9. Camera Controls
+
+Provide
+
+* Orbit Controls
+* Fly Controls
+* First Person Controls
+
+Smooth animated transitions between views.
+
+---
+
+### 10. Performance
+
+Use
+
+* Instanced Meshes
+* Lazy Loading
+* Suspense
+* Texture Compression
+* Level of Detail (LOD)
+
+Maintain 60 FPS.
+
+---
+
+## UI Requirements
+
+Layout
+
+Left Sidebar
+
+* Drawing Tools
+* Wall Tool
+* Door Tool
+* Window Tool
+* Furniture Tool
+
+Center
+
+* 2D Editor
+
+Right Sidebar
+
+* Properties
+* Materials
+* Measurements
+
+Top Navbar
+
+* New Project
+* Save
+* Generate 3D
+* Export
+* Settings
+
+Bottom Toolbar
+
+* Zoom
+* Grid
+* Snap
+* Layers
+
+---
+
+## Animation
+
+Use Framer Motion for
+
+* Sidebar animations
+* Floating toolbar
+* Generate 3D transition
+* Loading animations
+* Camera transitions
+
+---
+
+## Output
+
+The final output should look like a premium application similar to Planner5D, but with a modern Apple-inspired interface featuring smooth animations, glassmorphism where appropriate, clean typography, responsive layouts, and seamless transitions between the 2D editor and the 3D visualization.
+
+The code should be modular, reusable, scalable, and production-ready.

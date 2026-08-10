@@ -1,0 +1,200 @@
+# FLOW.md
+
+## Website Structure
+
+Home
+
+├── Products
+│   ├── AI Floor Planner
+│   ├── AI Interior Designer
+│   ├── AI Climate Analysis
+│   ├── Cost Estimator
+│   ├── Material Estimator
+│   ├── Furniture AI
+│   ├── Marketplace
+│   └── Community
+│
+├── Use Cases
+│   ├── Home Owners
+│   ├── Architects
+│   ├── Builders
+│   ├── Interior Designers
+│   ├── Students
+│   ├── Real Estate
+│
+├── Resources
+│   ├── Documentation
+│   ├── Blog
+│   ├── Tutorials
+│   ├── Case Studies
+│   ├── Design Gallery
+│   └── API Docs
+│
+├── Enterprise
+│   ├── Furniture Brands
+│   ├── Construction Companies
+│   ├── Architects
+│   ├── White Label
+│   └── API Integration
+│
+├── Pricing
+│
+├── Design Challenge
+│
+├── Marketplace
+│
+├── Community
+│
+└── About
+
+---
+
+# User Flow
+
+Landing Page
+
+↓
+
+Sign Up
+
+↓
+
+Create Project
+
+↓
+
+Enter Plot Details
+
+↓
+
+AI Requirement Analysis
+
+↓
+
+Generate Floor Plan
+
+↓
+
+Climate Analysis
+
+↓
+
+Cost Estimation
+
+↓
+
+Material Estimation
+
+↓
+
+Furniture Recommendation
+
+↓
+
+Marketplace
+
+↓
+
+Generate Reports
+
+↓
+
+Share Project
+
+↓
+
+Construction Dashboard
+
+---
+
+# SKILLS.md
+
+## AI Architect
+
+Creates intelligent floor plans.
+
+## AI Interior Designer
+
+Designs every room automatically.
+
+## AI Climate Engineer
+
+Optimizes sunlight, airflow, and seasonal comfort.
+
+## AI Structural Advisor
+
+Improves structural planning and identifies potential issues.
+
+## AI Cost Engineer
+
+Calculates construction and maintenance costs.
+
+## AI Material Estimator
+
+Generates a Bill of Quantities (BOQ).
+
+## AI Furniture Expert
+
+Suggests furniture layout and products from partner brands.
+
+## AI Sustainability Expert
+
+Improves energy efficiency and environmental impact.
+
+## AI Construction Planner
+
+Creates project timelines and milestone schedules.
+
+## AI Marketplace Assistant
+
+Recommends house plans, templates, and furniture.
+
+## AI Community Assistant
+
+Helps users publish, discover, clone, and improve projects.
+
+---
+
+# Future Roadmap
+
+## Phase 1
+
+* AI Floor Planner
+* Interior Designer
+* Cost Estimator
+* Material Estimator
+* Climate Analysis
+
+## Phase 2
+
+* Furniture Marketplace
+* Architecture Marketplace
+* Community Platform
+* AI Reports
+* Enterprise Dashboard
+
+## Phase 3
+
+* AR House Preview
+* Construction Progress Tracking
+* AI Defect Detection
+* Smart Home Planner
+* Utility Planner
+* Property Value Prediction
+* Contractor Marketplace
+* Digital Twin of the House
+
+---
+
+# Business Model
+
+* Free Plan
+* Pro Subscription
+* Enterprise Plan
+* Architecture Marketplace Commission
+* Furniture Affiliate Revenue
+* Sponsored Brand Listings
+* API Licensing
+* White Label Solutions
+* Premium AI Reports
+* Design Challenge Sponsorships

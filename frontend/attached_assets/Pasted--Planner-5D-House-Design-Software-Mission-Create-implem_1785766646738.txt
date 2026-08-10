@@ -1,0 +1,70 @@
+# Planner 5D: House Design Software
+
+## Mission
+Create implementation-ready, token-driven UI guidance for Planner 5D: House Design Software that is optimized for consistency, accessibility, and fast delivery across marketing site.
+
+## Brand
+- Product/brand: Planner 5D: House Design Software
+- URL: https://planner5d.com/
+- Audience: buyers, teams, and decision-makers
+- Product surface: marketing site
+
+## Style Foundations
+- Visual style: clean, functional, implementation-oriented
+- Main font style: `font.family.primary=OpenSans`, `font.family.stack=OpenSans, sans-serif`, `font.size.base=16px`, `font.weight.base=400`, `font.lineHeight.base=24px`
+- Typography scale: `font.size.xs=11px`, `font.size.sm=13.01px`, `font.size.md=13.33px`, `font.size.lg=14px`, `font.size.xl=16px`, `font.size.2xl=18px`, `font.size.3xl=36px`, `font.size.4xl=48px`
+- Color palette: `color.text.primary=#212529`, `color.surface.base=#000000`, `color.text.tertiary=#6d6d6d`, `color.text.inverse=#20bd57`, `color.surface.muted=#ffffff`, `color.surface.raised=#25e459`, `color.surface.strong=#f3f3f3`
+- Spacing scale: `space.1=4px`, `space.2=4.4px`, `space.3=10px`, `space.4=11px`, `space.5=12px`, `space.6=13.01px`, `space.7=15px`, `space.8=16px`
+- Radius/shadow/motion tokens: `radius.xs=2px`, `radius.sm=16px`, `radius.md=24px`, `radius.lg=50px`, `radius.xl=100px` | `shadow.1=rgba(0, 0, 0, 0.06) 0px 1px 6px 0px, rgba(0, 0, 0, 0.16) 0px 2px 32px 0px`, `shadow.2=rgba(0, 0, 0, 0.2) 0px 0px 18px 0px` | `motion.duration.instant=167ms`, `motion.duration.fast=200ms`, `motion.duration.normal=300ms`
+
+## Accessibility
+- Target: WCAG 2.2 AA
+- Keyboard-first interactions required.
+- Focus-visible rules required.
+- Contrast constraints required.
+
+## Writing Tone
+Concise, confident, implementation-focused.
+
+## Rules: Do
+- Use semantic tokens, not raw hex values, in component guidance.
+- Every component must define states for default, hover, focus-visible, active, disabled, loading, and error.
+- Component behavior should specify responsive and edge-case handling.
+- Interactive components must document keyboard, pointer, and touch behavior.
+- Accessibility acceptance criteria must be testable in implementation.
+
+## Rules: Don't
+- Do not allow low-contrast text or hidden focus indicators.
+- Do not introduce one-off spacing or typography exceptions.
+- Do not use ambiguous labels or non-descriptive actions.
+- Do not ship component guidance without explicit state rules.
+
+## Guideline Authoring Workflow
+1. Restate design intent in one sentence.
+2. Define foundations and semantic tokens.
+3. Define component anatomy, variants, interactions, and state behavior.
+4. Add accessibility acceptance criteria with pass/fail checks.
+5. Add anti-patterns, migration notes, and edge-case handling.
+6. End with a QA checklist.
+
+## Required Output Structure
+- Context and goals.
+- Design tokens and foundations.
+- Component-level rules (anatomy, variants, states, responsive behavior).
+- Accessibility requirements and testable acceptance criteria.
+- Content and tone standards with examples.
+- Anti-patterns and prohibited implementations.
+- QA checklist.
+
+## Component Rule Expectations
+- Include keyboard, pointer, and touch behavior.
+- Include spacing and typography token requirements.
+- Include long-content, overflow, and empty-state handling.
+- Include known page component density: links (153), buttons (23), lists (10), cards (8), inputs (7), navigation (2).
+
+
+## Quality Gates
+- Every non-negotiable rule must use "must".
+- Every recommendation should use "should".
+- Every accessibility rule must be testable in implementation.
+- Teams should prefer system consistency over local visual exceptions.

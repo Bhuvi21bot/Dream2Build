@@ -1,0 +1,182 @@
+# PRD.md
+
+# Dream2Build - Product Requirement Document
+
+## Product Vision
+
+Dream2Build is an AI-powered platform that helps users design, plan, optimize, estimate, visualize, and build homes using artificial intelligence.
+
+Instead of manually creating house plans, users simply describe their requirements, and Dream2Build generates complete architectural layouts, cost estimates, material requirements, climate analysis, furniture recommendations, and construction reports.
+
+---
+
+# Problem Statement
+
+Building a house is expensive, time-consuming, and requires multiple professionals.
+
+Users often struggle with
+
+* Finding architects
+* Understanding construction cost
+* Planning room layouts
+* Ventilation
+* Sunlight
+* Furniture placement
+* Material estimation
+* Construction planning
+
+Dream2Build solves all of these using AI.
+
+---
+
+# Target Users
+
+* Home Owners
+* Architects
+* Interior Designers
+* Builders
+* Civil Engineers
+* Students
+* Real Estate Companies
+* Furniture Brands
+
+---
+
+# Goals
+
+* AI-generated house plans
+* Reduce planning time
+* Reduce construction mistakes
+* Improve energy efficiency
+* Simplify construction planning
+* Connect homeowners with brands
+
+---
+
+# Core Features
+
+## AI House Planner
+
+Generate complete floor plans.
+
+## AI Interior Designer
+
+Design rooms automatically.
+
+## AI Climate Analyzer
+
+* Wind circulation
+* Sunlight
+* Cross ventilation
+* Seasonal temperature optimization
+
+## Cost Estimator
+
+Estimate
+
+* Construction
+* Interior
+* Furniture
+* Labor
+* Electrical
+* Plumbing
+
+## Material Estimator
+
+Generate BOQ
+
+* Cement
+* Steel
+* Bricks
+* Sand
+* Paint
+* Tiles
+* Wood
+* Glass
+
+## Construction Timeline
+
+Estimate project duration.
+
+## Furniture AI
+
+Suggest
+
+* Sofa
+* Dining
+* Bed
+* Wardrobe
+* Kitchen
+* TV Unit
+
+based on room size and budget.
+
+## Furniture Marketplace
+
+Partner brands
+
+* IKEA
+* Godrej Interio
+* Pepperfry
+* Urban Ladder
+
+Users can purchase directly.
+
+## Architecture Marketplace
+
+Users can
+
+* Buy house plans
+* Sell house plans
+* Buy interior designs
+* Sell templates
+
+## Community
+
+GitHub-like platform where users can
+
+* Publish projects
+* Clone projects
+* Comment
+* Rate
+* Follow designers
+
+## Sustainability
+
+Generate
+
+* Energy Score
+* Carbon Score
+* Green Building Score
+
+## AI Reports
+
+Generate
+
+* PDF
+* BOQ
+* Construction Report
+* Project Summary
+
+---
+
+# Revenue Model
+
+* Premium Subscription
+* Architecture Marketplace Commission
+* Furniture Affiliate Commission
+* Brand Advertisement
+* Enterprise API
+* White Label Platform
+
+---
+
+# KPIs
+
+* Active Users
+* Projects Created
+* Marketplace Sales
+* Furniture Conversions
+* AI Report Downloads
+* Enterprise Customers
+* Monthly Revenue
