@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "better-auth": "^1.6.29",
+    "mysql2": "^3.23.3"
+  }
+}
