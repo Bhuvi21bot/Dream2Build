@@ -35,6 +35,8 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+#env files
 
-#Env files
 .env
+.env.*
+!.env.example
