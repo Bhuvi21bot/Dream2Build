@@ -147,3 +147,42 @@ backend/coverage/
 # ============================================================
 
 *.local
+
+# ============================================================
+# AI / Python
+# ============================================================
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache / compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+
+# AI datasets
+ai/dataset/
+
+# AI generated outputs
+ai/outputs/
+
+# Model checkpoints / trained weights
+ai/models/*.pt
+ai/models/*.pth
+ai/models/*.ckpt
+ai/models/*.onnx
+
+# Python tooling / caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Temporary AI files
+ai/tmp/
+ai/cache/
