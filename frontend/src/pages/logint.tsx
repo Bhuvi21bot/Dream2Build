@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,26 +9,23 @@ import {
   Lock,
   Ruler,
   Star,
+  User,
 } from "lucide-react"
 import { signIn, signUp } from "@/lib/auth-client"
-
+import { useLocation, Link } from "wouter"
+import { useToast } from "@/hooks/use-toast"
 
 /**
- * Login — "Blueprint & Paper" design system, extended (not reinvented).
+ * Login / Register — "Blueprint & Paper" design system.
  * Background #FAF8F3 · Ink #1E2A22 · Primary #2F6F4E · Accent #D97A3F
- * Display: Fraunces (serif, font-serif) · Body: Plus Jakarta Sans (font-sans)
+ * Display: Fraunces (font-serif) · Body: Plus Jakarta Sans (font-sans)
  * Data: JetBrains Mono (font-mono)
  *
- * UI ONLY — no auth, no backend, no validation logic. The form has local
- * state and a fake ~900ms "loading" state on submit purely so the button
- * doesn't feel dead, but nothing is actually sent anywhere. Wire up your
- * own submit handler in place of the setTimeout in handleSubmit.
- *
- * Layout mirrors the homepage hero's convention: copy + form on the left,
- * a product visual on the right. The signature element is the title-block
- * stamp in the corner of the visual panel — a small nod to actual
- * architectural drawings, which every other page's "dimension tag" /
- * "pinned flag" details have been building toward.
+ * One component serves both /login and /register — the isRegister toggle
+ * switches copy, fields, and which auth-client call fires. Route both
+ * paths to this component in your router:
+ *   <Route path="/login" component={Login} />
+ *   <Route path="/register" component={Login} />
  */
 
 function BlueprintGrid({ className = "" }: { className?: string }) {
@@ -44,8 +41,6 @@ function BlueprintGrid({ className = "" }: { className?: string }) {
   )
 }
 
-/** A tiny, schematic Google "G" — approximated, not the official asset, just enough
- *  to signal "Google" on a generic OAuth button without reproducing exact brand art. */
 function GoogleGlyph() {
   return (
     <svg viewBox="0 0 18 18" className="h-4 w-4">
@@ -57,8 +52,6 @@ function GoogleGlyph() {
   )
 }
 
-/** The signature element — a corner title-block, like the annotation on a real
- *  architectural drawing sheet. */
 function TitleBlockStamp() {
   const rows: [string, string][] = [
     ["Project", "Your next home"],
@@ -84,8 +77,6 @@ function TitleBlockStamp() {
   )
 }
 
-/** Minimal floor-plan sketch, echoes the hero's EditorMock but scaled down for
- *  a side panel rather than the main focal image. */
 function FloorPlanSketch() {
   const rooms = [
     { x: 8, y: 8, w: 50, h: 42, fill: "#DCEFE6", label: "Living" },
@@ -108,43 +99,49 @@ function FloorPlanSketch() {
 }
 
 export default function Login() {
+  const [location, setLocation] = useLocation()
+  const [isRegister, setIsRegister] = useState(location === "/register")
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [isRegister, setIsRegister] = useState(false)
+  const { toast } = useToast()
 
-  // UI-only stand-in for a real submit handler — swap this for your actual
-  // auth call. Kept as a brief fake delay so the button doesn't feel dead.
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+
+    if (!email || !password || (isRegister && !name)) {
+      toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" })
+      return
+    }
+    if (isRegister && password.length < 8) {
+      toast({ title: "Error", description: "Password must be at least 8 characters", variant: "destructive" })
+      return
+    }
+
     setLoading(true)
     try {
       if (isRegister) {
-        const { data, error } = await signUp.email({
-          email,
-          password,
-          name: email.split("@")[0]
-        })
+        const { error } = await signUp.email({ email, password, name })
         if (error) {
-          alert(error.message || "Failed to sign up")
+          toast({ title: "Error", description: error.message || "Failed to sign up", variant: "destructive" })
         } else {
-          window.location.href = "/"
+          toast({ title: "Success", description: "Account created successfully!" })
+          setLocation("/")
         }
       } else {
-        const { data, error } = await signIn.email({
-          email,
-          password
-        })
+        const { error } = await signIn.email({ email, password })
         if (error) {
-          alert(error.message || "Failed to log in")
+          toast({ title: "Error", description: error.message || "Failed to log in", variant: "destructive" })
         } else {
-          window.location.href = "/"
+          toast({ title: "Success", description: "Logged in successfully!" })
+          setLocation("/")
         }
       }
     } catch (err) {
       console.error(err)
-      alert("An unexpected error occurred")
+      toast({ title: "Error", description: "An unexpected error occurred", variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -152,13 +149,15 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signIn.social({
-        provider: "google",
-        callbackURL: "/"
-      })
+      await signIn.social({ provider: "google", callbackURL: "/" })
     } catch (err) {
       console.error(err)
     }
+  }
+
+  function switchMode(next: boolean) {
+    setIsRegister(next)
+    setLocation(next ? "/register" : "/login")
   }
 
   return (
@@ -169,27 +168,30 @@ export default function Login() {
         {/* LEFT — form */}
         <div className="flex flex-col justify-center px-6 py-16 sm:px-12 lg:px-20">
           <div className="mx-auto w-full max-w-sm">
-            <motion.a
-              href="/"
+            <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="group mb-10 flex items-center gap-2"
+              className="mb-10"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#2F6F4E]/30 bg-[#2F6F4E]/10 transition-colors group-hover:bg-[#2F6F4E]/20">
-                <Ruler className="h-4 w-4 text-[#2F6F4E]" />
-              </div>
-              <span className="font-serif text-lg font-medium tracking-tight">
-                Dream2Build<span className="text-[#D97A3F]">.</span>
-              </span>
-            </motion.a>
+              <Link href="/" className="group flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#2F6F4E]/30 bg-[#2F6F4E]/10 transition-colors group-hover:bg-[#2F6F4E]/20">
+                  <Ruler className="h-4 w-4 text-[#2F6F4E]" />
+                </div>
+                <span className="font-serif text-lg font-medium tracking-tight">
+                  Dream2Build<span className="text-[#D97A3F]">.</span>
+                </span>
+              </Link>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.05 }}
             >
-              <span className="font-mono text-xs uppercase tracking-widest text-[#D97A3F]">Welcome back</span>
+              <span className="font-mono text-xs uppercase tracking-widest text-[#D97A3F]">
+                {isRegister ? "Get started" : "Welcome back"}
+              </span>
               <h1 className="mt-3 font-serif text-3xl font-medium tracking-tight md:text-4xl">
                 {isRegister ? (
                   <>Create your <span className="italic text-[#2F6F4E]">account</span>.</>
@@ -198,8 +200,8 @@ export default function Login() {
                 )}
               </h1>
               <p className="mt-3 text-[#1E2A22]/60">
-                {isRegister 
-                  ? "Sign up to start saving your projects, drafts, and floor plans." 
+                {isRegister
+                  ? "Sign up to start saving your projects, drafts, and floor plans."
                   : "Log in to get back to your projects, drafts, and saved plans."}
               </p>
             </motion.div>
@@ -211,6 +213,26 @@ export default function Login() {
               onSubmit={handleSubmit}
               className="mt-9 space-y-4"
             >
+              {isRegister && (
+                <div>
+                  <label htmlFor="name" className="mb-1.5 block font-mono text-[10px] uppercase tracking-wide text-[#1E2A22]/50">
+                    Name
+                  </label>
+                  <div className="flex items-center gap-2 rounded-xl border border-[#1E2A22]/15 bg-white px-3.5 py-2.5 transition-colors focus-within:border-[#2F6F4E]/50 focus-within:ring-2 focus-within:ring-[#2F6F4E]/15">
+                    <User className="h-4 w-4 shrink-0 text-[#1E2A22]/35" />
+                    <input
+                      id="name"
+                      type="text"
+                      autoComplete="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Jane Doe"
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-[#1E2A22]/35"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="email" className="mb-1.5 block font-mono text-[10px] uppercase tracking-wide text-[#1E2A22]/50">
                   Email
@@ -234,16 +256,18 @@ export default function Login() {
                   <label htmlFor="password" className="block font-mono text-[10px] uppercase tracking-wide text-[#1E2A22]/50">
                     Password
                   </label>
-                  <a href="#" className="font-mono text-[10px] uppercase tracking-wide text-[#2F6F4E] hover:underline">
-                    Forgot?
-                  </a>
+                  {!isRegister && (
+                    <Link href="/forgot-password" className="font-mono text-[10px] uppercase tracking-wide text-[#2F6F4E] hover:underline">
+                      Forgot?
+                    </Link>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 rounded-xl border border-[#1E2A22]/15 bg-white px-3.5 py-2.5 transition-colors focus-within:border-[#2F6F4E]/50 focus-within:ring-2 focus-within:ring-[#2F6F4E]/15">
                   <Lock className="h-4 w-4 shrink-0 text-[#1E2A22]/35" />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    autoComplete={isRegister ? "new-password" : "current-password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
@@ -296,14 +320,14 @@ export default function Login() {
               {isRegister ? (
                 <>
                   Already have an account?{" "}
-                  <button type="button" onClick={() => setIsRegister(false)} className="font-semibold text-[#2F6F4E] hover:underline">
+                  <button type="button" onClick={() => switchMode(false)} className="font-semibold text-[#2F6F4E] hover:underline">
                     Log in
                   </button>
                 </>
               ) : (
                 <>
                   New to Dream2Build?{" "}
-                  <button type="button" onClick={() => setIsRegister(true)} className="font-semibold text-[#2F6F4E] hover:underline">
+                  <button type="button" onClick={() => switchMode(true)} className="font-semibold text-[#2F6F4E] hover:underline">
                     Start free
                   </button>
                 </>
@@ -312,7 +336,7 @@ export default function Login() {
           </div>
         </div>
 
-        {/* RIGHT — visual panel, hidden below lg since there's no room to do it justice */}
+        {/* RIGHT — visual panel */}
         <div className="relative hidden overflow-hidden border-l border-[#1E2A22]/10 bg-[#F4F1EA] lg:block">
           <BlueprintGrid className="opacity-60" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center gap-10 p-12">
