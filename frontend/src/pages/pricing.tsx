@@ -127,6 +127,9 @@ const FAQS = [
   },
 ]
 
+import { useSession } from "@/lib/auth-client"
+import { useToast } from "@/hooks/use-toast"
+
 function formatPrice(n: number) {
   return n === 0 ? "$0" : `$${n}`
 }
@@ -134,6 +137,64 @@ function formatPrice(n: number) {
 export default function Pricing() {
   const [annual, setAnnual] = useState(true)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const { data: session } = useSession()
+  const { toast } = useToast()
+
+  const handleCheckout = async (tierName: string) => {
+    if (!session?.user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to upgrade your plan.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const plan = tierName.toLowerCase() === 'drafting' ? 'pro' : tierName.toLowerCase() === 'studio' ? 'enterprise' : null;
+    if (!plan) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BETTER_AUTH_URL || 'http://localhost:5000'}/api/payments/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      })
+      
+      const order = await response.json()
+      if (order.error) throw new Error(order.error)
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_RlAeT39pT8YV7E",
+        amount: order.amount,
+        currency: order.currency,
+        name: "Dream2Build",
+        description: `Upgrade to ${tierName} Plan`,
+        order_id: order.id,
+        handler: async function (response: any) {
+          toast({
+            title: "Payment Successful",
+            description: `You have successfully upgraded to the ${tierName} plan!`,
+          })
+        },
+        prefill: {
+          name: session.user.name,
+          email: session.user.email,
+        },
+        theme: {
+          color: "#2F6F4E",
+        },
+      }
+
+      const rzp = new (window as any).Razorpay(options)
+      rzp.open()
+    } catch (err: any) {
+      toast({
+        title: "Payment Error",
+        description: err.message || "Failed to initiate payment.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <div className="relative w-full overflow-hidden bg-[#FAF8F3] py-24 text-[#1E2A22]">
@@ -203,6 +264,7 @@ export default function Pricing() {
 
                 <Button
                   size="lg"
+                  onClick={() => handleCheckout(tier.name)}
                   className={`mb-8 w-full rounded-full font-semibold ${tier.popular
                       ? "bg-[#D97A3F] text-white hover:bg-[#c66a30]"
                       : "border border-[#1E2A22]/20 bg-white text-[#1E2A22] hover:bg-[#FAF8F3]"
