@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation } from "wouter"
 import { motion, AnimatePresence } from "framer-motion"
-import { Moon, Sun, Menu, X, Home as HomeIcon } from "lucide-react"
+import { Moon, Sun, Menu, X, Home as HomeIcon, User as UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { useSession, signOut } from "@/lib/auth-client"
 
 /**
  * Floating "drafting pin" navbar — Blueprint & Paper design system.
@@ -27,7 +28,8 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { theme, setTheme } = useTheme()
-  const [location] = useLocation()
+  const [location, setLocation] = useLocation()
+  const { data: session } = useSession()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -94,12 +96,28 @@ export function Navbar() {
               <Moon className="absolute h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span className="sr-only">Toggle theme</span>
             </Button>
-            <Button variant="ghost" className="rounded-full font-medium text-[#1E2A22]/75 hover:text-[#1E2A22]">
-              Log in
-            </Button>
-            <Button className="rounded-full bg-[#D97A3F] px-5 text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>
-              Start free
-            </Button>
+            {session?.user ? (
+              <div className="flex items-center gap-3 ml-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-[#2F6F4E]/10 flex items-center justify-center border border-[#2F6F4E]/20">
+                    <UserIcon className="h-4 w-4 text-[#2F6F4E]" />
+                  </div>
+                  <span className="text-sm font-medium text-[#1E2A22]">{session.user.name}</span>
+                </div>
+                <Button variant="ghost" onClick={async () => { await signOut(); setLocation("/"); }} className="rounded-full font-medium text-[#1E2A22]/75 hover:text-[#1E2A22]">
+                  Log out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => setLocation("/login")} className="rounded-full font-medium text-[#1E2A22]/75 hover:text-[#1E2A22]">
+                  Log in
+                </Button>
+                <Button className="rounded-full bg-[#D97A3F] px-5 text-white hover:bg-[#c66a30]" onClick={() => setLocation("/register")}>
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -153,12 +171,28 @@ export function Navbar() {
             </div>
 
             <div className="mt-3 flex flex-col gap-2">
-              <Button variant="outline" className="w-full rounded-full border-[#1E2A22]/15">
-                Log in
-              </Button>
-              <Button className="w-full rounded-full bg-[#D97A3F] text-white hover:bg-[#c66a30]" onClick={() => window.open('/planner', '_blank')}>
-                Start free
-              </Button>
+              {session?.user ? (
+                <>
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <div className="h-8 w-8 rounded-full bg-[#2F6F4E]/10 flex items-center justify-center border border-[#2F6F4E]/20">
+                      <UserIcon className="h-4 w-4 text-[#2F6F4E]" />
+                    </div>
+                    <span className="text-sm font-medium text-[#1E2A22]">{session.user.name}</span>
+                  </div>
+                  <Button variant="outline" onClick={async () => { await signOut(); setIsOpen(false); setLocation("/"); }} className="w-full rounded-full border-[#1E2A22]/15">
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => { setIsOpen(false); setLocation("/login"); }} className="w-full rounded-full border-[#1E2A22]/15">
+                    Log in
+                  </Button>
+                  <Button className="w-full rounded-full bg-[#D97A3F] text-white hover:bg-[#c66a30]" onClick={() => { setIsOpen(false); setLocation("/register"); }}>
+                    Sign up
+                  </Button>
+                </>
+              )}
             </div>
           </motion.div>
         )}
