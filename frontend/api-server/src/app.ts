@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { auth } from "./lib/auth";
 
 const app: Express = express();
 
@@ -25,7 +26,15 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+}));
+
+app.all("/api/auth/*", (req, res) => {
+  return auth.handler(req, res);
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

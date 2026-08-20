@@ -13,13 +13,18 @@ dotenv.config({ path: path.resolve(__dirname, '../../frontend/.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // Default vite port
-app.use(express.json());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
-// Better Auth Middleware
+// Better Auth Middleware - must be mounted before body parsers
 app.all("/api/auth/*", (req, res) => {
   return auth.handler(req, res);
 });
+
+app.use(express.json());
 
 // Razorpay Initialization
 const razorpay = new Razorpay({
