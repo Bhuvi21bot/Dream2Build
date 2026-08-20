@@ -104,7 +104,7 @@ function GroupBlock({ group, onNavigate }: { group: Group; onNavigate?: () => vo
       </div>
       <ul className="space-y-0.5">
         {group.items.map((item) => (
-          <li key={item.href}>
+          <li key={item.title}>
             <DockLink
               href={item.href}
               onClick={onNavigate}

@@ -48,6 +48,7 @@ function Router() {
           LOGIN
       ========================= */}
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Login} />
 
       {/* =========================
           PLANNER

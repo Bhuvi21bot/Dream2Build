@@ -4,13 +4,13 @@ import Razorpay from 'razorpay';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { auth } from './auth.js';
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth.js";
 import { pool } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../../frontend/.env') });
-dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const app = express();
 const corsOptions = {
@@ -20,9 +20,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Better Auth Middleware - must be mounted before body parsers
-app.all("/api/auth/*", (req, res) => {
-  return auth.handler(req, res);
-});
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.use(express.json());
 
