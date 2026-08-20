@@ -4,7 +4,7 @@
  * SELECT mode
  *   • Click any element to select it (highlighted with amber outline)
  *   • Drag selected ROOM body  → moves room
- *   • Drag selected ROOM corner handle → resizes (rect rooms only)
+ *   • Drag selected ROOM vertex handle → reshapes (works for any room shape)
  *   • Drag selected WALL endpoint handle → moves that endpoint
  *   • Drag selected FURNITURE body → moves furniture
  *   • Drag selected FURNITURE corner handle → resizes
@@ -25,44 +25,43 @@ import { Point, Wall, Room, Furniture, FurnitureType, RoomType } from '../types'
 const POLY_CLOSE_DIST = 30;
 
 // ─── constants ────────────────────────────────────────────────────────────────
-const GRID         = 20;
-const WALL_T       = 14;          // default wall thickness
-const HANDLE_R     = 7;           // handle hit radius in world px
-const SNAP_DIST    = 40;          // wall-snap radius for door/window
+const GRID = 20;
+const WALL_T = 14;          // default wall thickness
+const HANDLE_R = 7;           // handle hit radius in world px
+const SNAP_DIST = 40;          // wall-snap radius for door/window
 
 const ROOM_COLORS: Record<RoomType, { fill: string; stroke: string }> = {
-  living:   { fill: 'rgba(218,178,120,0.4)',  stroke: '#d4a96a' },
-  bedroom:  { fill: 'rgba(160,130,220,0.4)',  stroke: '#9b7edb' },
-  kitchen:  { fill: 'rgba( 80,190,190,0.4)',  stroke: '#4eb8b8' },
-  bathroom: { fill: 'rgba( 80,140,220,0.4)',  stroke: '#5e8edb' },
-  dining:   { fill: 'rgba(220,200,100,0.4)',  stroke: '#c8b836' },
-  balcony:  { fill: 'rgba( 80,200,120,0.4)',  stroke: '#40c870' },
-  corridor: { fill: 'rgba(160,160,160,0.4)',  stroke: '#8e8e8e' },
+  living: { fill: 'rgba(218,178,120,0.4)', stroke: '#d4a96a' },
+  bedroom: { fill: 'rgba(160,130,220,0.4)', stroke: '#9b7edb' },
+  kitchen: { fill: 'rgba( 80,190,190,0.4)', stroke: '#4eb8b8' },
+  bathroom: { fill: 'rgba( 80,140,220,0.4)', stroke: '#5e8edb' },
+  dining: { fill: 'rgba(220,200,100,0.4)', stroke: '#c8b836' },
+  balcony: { fill: 'rgba( 80,200,120,0.4)', stroke: '#40c870' },
+  corridor: { fill: 'rgba(160,160,160,0.4)', stroke: '#8e8e8e' },
 };
 
 const FURNITURE_CFG: Record<FurnitureType, { w: number; d: number; fill: string; label: string }> = {
-  sofa:              { w: 200, d:  90, fill: '#8b6565', label: 'Sofa'          },
-  bed:               { w: 160, d: 200, fill: '#5b6b9e', label: 'Bed'           },
-  'dining-table':    { w: 140, d:  90, fill: '#9e7a4e', label: 'Dining Table'  },
-  chair:             { w:  55, d:  55, fill: '#7a9e6b', label: 'Chair'         },
-  desk:              { w: 120, d:  70, fill: '#4a9e9e', label: 'Desk'          },
-  wardrobe:          { w: 150, d:  65, fill: '#9e5b8b', label: 'Wardrobe'      },
-  'kitchen-counter': { w: 220, d:  60, fill: '#8e8e8e', label: 'Counter'       },
-  toilet:            { w:  50, d:  70, fill: '#cce8ff', label: 'Toilet'        },
-  bathtub:           { w: 160, d:  75, fill: '#b8d8f0', label: 'Bathtub'       },
-  stairs:            { w: 100, d: 250, fill: '#b8995a', label: 'Stairs'        },
+  sofa: { w: 200, d: 90, fill: '#8b6565', label: 'Sofa' },
+  bed: { w: 160, d: 200, fill: '#5b6b9e', label: 'Bed' },
+  'dining-table': { w: 140, d: 90, fill: '#9e7a4e', label: 'Dining Table' },
+  chair: { w: 55, d: 55, fill: '#7a9e6b', label: 'Chair' },
+  desk: { w: 120, d: 70, fill: '#4a9e9e', label: 'Desk' },
+  wardrobe: { w: 150, d: 65, fill: '#9e5b8b', label: 'Wardrobe' },
+  'kitchen-counter': { w: 220, d: 60, fill: '#8e8e8e', label: 'Counter' },
+  toilet: { w: 50, d: 70, fill: '#cce8ff', label: 'Toilet' },
+  bathtub: { w: 160, d: 75, fill: '#b8d8f0', label: 'Bathtub' },
+  stairs: { w: 100, d: 250, fill: '#b8995a', label: 'Stairs' },
 };
 
 // ─── drag descriptor ──────────────────────────────────────────────────────────
 type DragKind =
-  | { kind: 'pan'; vx0: number; vy0: number }
-  | { kind: 'move-room';     id: string; pts0: Point[]; wx0: number; wy0: number }
-  | { kind: 'resize-room';   id: string; corner: number; pts0: Point[] }
+  | { kind: 'pan'; vx0: number; vy0: number; sx0: number; sy0: number }
+  | { kind: 'move-room'; id: string; pts0: Point[]; wx0: number; wy0: number }
   | { kind: 'move-room-vertex'; id: string; vertIdx: number; pts0: Point[] }
   | { kind: 'move-furniture'; id: string; ox: number; oy: number; wx0: number; wy0: number }
   | { kind: 'resize-furniture'; id: string; corner: number; ox: number; oy: number; w0: number; d0: number; wx0: number; wy0: number }
   | { kind: 'move-wall-start'; id: string }
-  | { kind: 'move-wall-end';   id: string }
+  | { kind: 'move-wall-end'; id: string }
   | { kind: 'move-wall'; id: string; start0: Point; end0: Point; wx0: number; wy0: number }
   | { kind: 'move-opening'; type: 'door' | 'window'; id: string; wallId: string; pos0: number; wx0: number; wy0: number }
   | { kind: 'draw-wall' | 'draw-room'; start: Point }
@@ -86,6 +85,8 @@ function rectCorners(x: number, y: number, w: number, h: number): Point[] {
   ];
 }
 
+// Generates non-rectangular room outlines. Ready to wire up once the room
+// toolbar exposes a shape selector (currently only 'rect' is used by draw-room).
 function getPointsForShape(shape: string, start: Point, end: Point): Point[] {
   const x = Math.min(start.x, end.x);
   const y = Math.min(start.y, end.y);
@@ -175,10 +176,10 @@ function ptInPolygon(p: Point, pts: Point[]) {
 
 // ─── component ────────────────────────────────────────────────────────────────
 export function FloorPlan2D() {
-  const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const overlayRef   = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const rafRef       = useRef<number>(0);
+  const rafRef = useRef<number>(0);
   const [, forceRender] = useState(0);
 
   const viewRef = useRef({ x: 80, y: 80, scale: 1 });
@@ -192,7 +193,7 @@ export function FloorPlan2D() {
   // ── helpers ────────────────────────────────────────────────────────────────
   const snapV = (v: number) => storeRef.current.snapToGrid ? Math.round(v / GRID) * GRID : v;
   const snapP = (p: Point): Point => ({ x: snapV(p.x), y: snapV(p.y) });
-  const dist  = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
+  const dist = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 
   const toWorld = useCallback((sx: number, sy: number): Point => {
     const v = viewRef.current;
@@ -238,7 +239,7 @@ export function FloorPlan2D() {
           deleteWall, deleteRoom, deleteDoor, deleteWindow, deleteFurniture } = storeRef.current;
         if (!selectedId) return;
         e.preventDefault();
-        if (walls.find(w => w.id === selectedId))     deleteWall(selectedId);
+        if (walls.find(w => w.id === selectedId)) deleteWall(selectedId);
         else if (rooms.find(r => r.id === selectedId)) deleteRoom(selectedId);
         else if (doors.find(d => d.id === selectedId)) deleteDoor(selectedId);
         else if (windows.find(w => w.id === selectedId)) deleteWindow(selectedId);
@@ -270,7 +271,7 @@ export function FloorPlan2D() {
     const { x: vx, y: vy, scale: vs } = viewRef.current;
     const W = canvas.width, H = canvas.height;
     const { walls, rooms, doors, windows, furniture, selectedId, activeTool,
-            showGrid, selectedFurnitureType, polygonPoints } = storeRef.current;
+      showGrid, selectedFurnitureType, polygonPoints } = storeRef.current;
     const mouse = mouseRef.current;
 
     // ── main canvas ──────────────────────────────────────────────────────────
@@ -354,9 +355,9 @@ export function FloorPlan2D() {
     for (const door of doors) {
       const wall = walls.find(w => w.id === door.wallId); if (!wall) continue;
       const dx = wall.end.x - wall.start.x, dy = wall.end.y - wall.start.y;
-      const len = Math.hypot(dx, dy);
-      const px = wall.start.x + dx / len * len * door.position;
-      const py = wall.start.y + dy / len * len * door.position;
+      if (dx === 0 && dy === 0) continue; // degenerate wall — skip instead of producing NaN
+      const px = wall.start.x + dx * door.position;
+      const py = wall.start.y + dy * door.position;
       const isSel = selectedId === door.id;
       ctx.save();
       ctx.translate(px, py); ctx.rotate(Math.atan2(dy, dx));
@@ -377,9 +378,9 @@ export function FloorPlan2D() {
     for (const win of windows) {
       const wall = walls.find(w => w.id === win.wallId); if (!wall) continue;
       const dx = wall.end.x - wall.start.x, dy = wall.end.y - wall.start.y;
-      const len = Math.hypot(dx, dy);
-      const px = wall.start.x + dx / len * len * win.position;
-      const py = wall.start.y + dy / len * len * win.position;
+      if (dx === 0 && dy === 0) continue; // degenerate wall — skip instead of producing NaN
+      const px = wall.start.x + dx * win.position;
+      const py = wall.start.y + dy * win.position;
       const isSel = selectedId === win.id;
       ctx.save();
       ctx.translate(px, py); ctx.rotate(Math.atan2(dy, dx));
@@ -583,7 +584,7 @@ export function FloorPlan2D() {
       const selWall = walls.find(w => w.id === selectedId);
       if (selWall) {
         if (dist(world, selWall.start) <= HR + 4) return { type: 'wall-start', id: selectedId } as const;
-        if (dist(world, selWall.end)   <= HR + 4) return { type: 'wall-end',   id: selectedId } as const;
+        if (dist(world, selWall.end) <= HR + 4) return { type: 'wall-end', id: selectedId } as const;
       }
     }
 
@@ -671,8 +672,8 @@ export function FloorPlan2D() {
     const world = toWorld(sx, sy);
     const sp = snapP(world);
     const { activeTool, setSelectedId, addWall, addRoom, addFurniture,
-            addDoor, addWindow, selectedFurnitureType, selectedRoomType,
-            polygonPoints, addPolygonPoint, closePolygon } = storeRef.current;
+      addDoor, addWindow, selectedFurnitureType, selectedRoomType,
+      polygonPoints, addPolygonPoint, closePolygon } = storeRef.current;
     const { x: vx, y: vy } = viewRef.current;
 
     // ── drawing tools ──────────────────────────────────────────────────────
@@ -696,8 +697,10 @@ export function FloorPlan2D() {
     }
     if (activeTool === 'furniture') {
       const cfg = FURNITURE_CFG[selectedFurnitureType];
-      addFurniture({ id: 'f_' + Math.random().toString(36).slice(2), type: selectedFurnitureType,
-        position: sp, rotation: 0, width: cfg.w, depth: cfg.d, color: cfg.fill });
+      addFurniture({
+        id: 'f_' + Math.random().toString(36).slice(2), type: selectedFurnitureType,
+        position: sp, rotation: 0, width: cfg.w, depth: cfg.d, color: cfg.fill
+      });
       setSelectedId(null);
       return;
     }
@@ -720,8 +723,10 @@ export function FloorPlan2D() {
     }
     if (hit?.type === 'furn-resize') {
       const f = storeRef.current.furniture.find(fi => fi.id === hit.id)!;
-      dragRef.current = { kind: 'resize-furniture', id: hit.id, corner: hit.corner,
-        ox: f.position.x, oy: f.position.y, w0: f.width, d0: f.depth, wx0: world.x, wy0: world.y };
+      dragRef.current = {
+        kind: 'resize-furniture', id: hit.id, corner: hit.corner,
+        ox: f.position.x, oy: f.position.y, w0: f.width, d0: f.depth, wx0: world.x, wy0: world.y
+      };
       return;
     }
     if (hit?.type === 'wall-start') {
@@ -763,9 +768,9 @@ export function FloorPlan2D() {
       return;
     }
 
-    // empty canvas → pan
+    // empty canvas → pan (store the screen-space origin so mousemove can compute a clean delta)
     setSelectedId(null);
-    dragRef.current = { kind: 'pan', vx0: vx, vy0: vy };
+    dragRef.current = { kind: 'pan', vx0: vx, vy0: vy, sx0: sx, sy0: sy };
   }, [toWorld]);
 
   // ── mouse move ─────────────────────────────────────────────────────────────
@@ -782,14 +787,8 @@ export function FloorPlan2D() {
     if (!drag) return;
 
     if (drag.kind === 'pan') {
-      const dx = sx - (drag.vx0 !== undefined ? /* initial sx */ 0 : 0);
-      // recalculate from initial screen position
-      // we stored vx0,vy0 but need sx0,sy0 too — patch: use mouse delta
-      const { x: vx, y: vy } = viewRef.current;
-      // stored vx0,vy0 at mousedown; need dx from mousedown
-      // Actually we track via stagePos delta:
-      viewRef.current.x = drag.vx0 + (sx - (drag as any)._sx0);
-      viewRef.current.y = drag.vy0 + (sy - (drag as any)._sy0);
+      viewRef.current.x = drag.vx0 + (sx - drag.sx0);
+      viewRef.current.y = drag.vy0 + (sy - drag.sy0);
       return;
     }
 
@@ -819,7 +818,7 @@ export function FloorPlan2D() {
       const dx = world.x - drag.wx0, dy = world.y - drag.wy0;
       let nw = drag.w0, nd = drag.d0, nx = drag.ox, ny = drag.oy;
       // corner 0=TL, 1=TR, 2=BR, 3=BL (in local furniture coords, unrotated)
-      if (drag.corner === 0)      { nw = Math.max(40, drag.w0 - dx * 2); nd = Math.max(40, drag.d0 - dy * 2); }
+      if (drag.corner === 0) { nw = Math.max(40, drag.w0 - dx * 2); nd = Math.max(40, drag.d0 - dy * 2); }
       else if (drag.corner === 1) { nw = Math.max(40, drag.w0 + dx * 2); nd = Math.max(40, drag.d0 - dy * 2); }
       else if (drag.corner === 2) { nw = Math.max(40, drag.w0 + dx * 2); nd = Math.max(40, drag.d0 + dy * 2); }
       else if (drag.corner === 3) { nw = Math.max(40, drag.w0 - dx * 2); nd = Math.max(40, drag.d0 + dy * 2); }
@@ -870,8 +869,10 @@ export function FloorPlan2D() {
 
     if (drag?.kind === 'draw-wall') {
       if (dist(drag.start, sp) > 10) {
-        addWall({ id: 'w_' + Math.random().toString(36).slice(2), start: drag.start, end: sp,
-          thickness: WALL_T, height: 280, material: 'white-paint' });
+        addWall({
+          id: 'w_' + Math.random().toString(36).slice(2), start: drag.start, end: sp,
+          thickness: WALL_T, height: 280, material: 'white-paint'
+        });
       }
     }
     if (drag?.kind === 'draw-room') {
@@ -879,11 +880,13 @@ export function FloorPlan2D() {
       if (rw > 20 && rh > 20) {
         const rx = Math.min(drag.start.x, sp.x), ry = Math.min(drag.start.y, sp.y);
         const clr = ROOM_COLORS[selectedRoomType] ?? ROOM_COLORS.living;
-        addRoom({ id: 'r_' + Math.random().toString(36).slice(2),
+        addRoom({
+          id: 'r_' + Math.random().toString(36).slice(2),
           name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
           type: selectedRoomType,
           points: [{ x: rx, y: ry }, { x: rx + rw, y: ry }, { x: rx + rw, y: ry + rh }, { x: rx, y: ry + rh }],
-          floorMaterial: 'hardwood', color: clr.fill });
+          floorMaterial: 'hardwood', color: clr.fill
+        });
       }
     }
 
@@ -902,16 +905,6 @@ export function FloorPlan2D() {
     forceRender(n => n + 1);
   }, []);
 
-  // patch pan to store sx0,sy0 at mousedown
-  const onMouseDownWithPanFix = useCallback((e: React.MouseEvent) => {
-    const { sx, sy } = getXY(e);
-    onMouseDown(e);
-    if (dragRef.current?.kind === 'pan') {
-      (dragRef.current as any)._sx0 = sx;
-      (dragRef.current as any)._sy0 = sy;
-    }
-  }, [onMouseDown]);
-
   return (
     <div ref={containerRef} className="w-full h-full relative overflow-hidden select-none" style={{ background: '#16213e' }}>
       <canvas ref={canvasRef} className="absolute inset-0" />
@@ -921,7 +914,7 @@ export function FloorPlan2D() {
       <div
         className="absolute inset-0"
         style={{ cursor }}
-        onMouseDown={onMouseDownWithPanFix}
+        onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onDoubleClick={onDblClick}
