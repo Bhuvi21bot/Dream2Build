@@ -29,6 +29,10 @@ const GRID = 20;
 const WALL_T = 14;          // default wall thickness
 const HANDLE_R = 7;           // handle hit radius in world px
 const SNAP_DIST = 40;          // wall-snap radius for door/window
+const WALL_JOIN_DIST = 28;        // radius (world px) within which a new/dragged wall endpoint snaps to an existing wall's endpoint, joining the two walls
+
+const ROOM_SHAPES = ['rect', 'l-shape', 'u-shape', 't-shape', 'octagonal'] as const;
+type RoomShape = typeof ROOM_SHAPES[number];
 
 const ROOM_COLORS: Record<RoomType, { fill: string; stroke: string }> = {
   living: { fill: 'rgba(218,178,120,0.4)', stroke: '#d4a96a' },
@@ -190,6 +194,15 @@ export function FloorPlan2D() {
   const storeRef = useRef(store);
   storeRef.current = store;
 
+  // ── room shape (for the 'room' drag-draw tool) ────────────────────────────
+  const [roomShape, setRoomShape] = useState<RoomShape>('rect');
+  const roomShapeRef = useRef(roomShape);
+  roomShapeRef.current = roomShape;
+
+  // ── export / import ────────────────────────────────────────────────────────
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
   // ── helpers ────────────────────────────────────────────────────────────────
   const snapV = (v: number) => storeRef.current.snapToGrid ? Math.round(v / GRID) * GRID : v;
   const snapP = (p: Point): Point => ({ x: snapV(p.x), y: snapV(p.y) });
@@ -212,6 +225,24 @@ export function FloorPlan2D() {
     }
     return best;
   };
+
+  // nearest existing wall ENDPOINT (start or end) within join range — used to
+  // auto-join new/dragged walls onto existing corners instead of leaving a gap
+  const wallJointSnap = (p: Point, excludeWallId?: string): Point | null => {
+    const { walls } = storeRef.current;
+    let best: Point | null = null, bestD = Infinity;
+    for (const w of walls) {
+      if (w.id === excludeWallId) continue;
+      for (const ep of [w.start, w.end]) {
+        const d = dist(p, ep);
+        if (d < bestD) { bestD = d; best = ep; }
+      }
+    }
+    return best && bestD <= WALL_JOIN_DIST ? { x: best.x, y: best.y } : null;
+  };
+  // wall endpoint placement: prefer joining an existing corner, else fall back to grid snap
+  const snapWallPoint = (p: Point, excludeWallId?: string): Point =>
+    wallJointSnap(p, excludeWallId) ?? snapP(p);
 
   // ── keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -438,27 +469,52 @@ export function FloorPlan2D() {
 
     if (drag && (drag.kind === 'draw-wall') && activeTool === 'wall') {
       const { start } = drag;
-      octx.beginPath(); octx.moveTo(start.x, start.y); octx.lineTo(sm.x, sm.y);
+      const joint = wallJointSnap(mouse);
+      const endPt = joint ?? sm;
+      octx.beginPath(); octx.moveTo(start.x, start.y); octx.lineTo(endPt.x, endPt.y);
       octx.strokeStyle = '#f59e0b'; octx.lineWidth = WALL_T; octx.lineCap = 'round';
       octx.globalAlpha = 0.55; octx.stroke(); octx.globalAlpha = 1;
-      [start, sm].forEach(p => { octx.beginPath(); octx.arc(p.x, p.y, 7 / vs, 0, Math.PI * 2); octx.fillStyle = '#f59e0b'; octx.fill(); });
-      const mx = (start.x + sm.x) / 2, my = (start.y + sm.y) / 2;
-      octx.fillStyle = '#f59e0b'; octx.font = `bold ${12 / vs}px monospace`;
+      [start, endPt].forEach(p => { octx.beginPath(); octx.arc(p.x, p.y, 7 / vs, 0, Math.PI * 2); octx.fillStyle = '#f59e0b'; octx.fill(); });
+      if (joint) {
+        // highlight the corner we're about to join onto
+        octx.beginPath(); octx.arc(joint.x, joint.y, 12 / vs, 0, Math.PI * 2);
+        octx.strokeStyle = '#22c55e'; octx.lineWidth = 2 / vs; octx.stroke();
+      }
+      const mx = (start.x + endPt.x) / 2, my = (start.y + endPt.y) / 2;
+      octx.fillStyle = joint ? '#22c55e' : '#f59e0b'; octx.font = `bold ${12 / vs}px monospace`;
       octx.textAlign = 'center'; octx.textBaseline = 'bottom';
-      octx.fillText(`${Math.round(dist(start, sm))} cm`, mx, my - 10 / vs);
+      octx.fillText(`${Math.round(dist(start, endPt))} cm${joint ? ' · join' : ''}`, mx, my - 10 / vs);
     }
 
     if (drag && drag.kind === 'draw-room' && activeTool === 'room') {
       const { start } = drag;
-      const rx = Math.min(start.x, sm.x), ry = Math.min(start.y, sm.y);
-      const rw = Math.abs(sm.x - start.x), rh = Math.abs(sm.y - start.y);
-      octx.fillStyle = 'rgba(245,158,11,0.12)';
-      octx.fillRect(rx, ry, rw, rh);
-      octx.strokeStyle = '#f59e0b'; octx.lineWidth = 2 / vs;
-      octx.setLineDash([8 / vs, 4 / vs]); octx.strokeRect(rx, ry, rw, rh); octx.setLineDash([]);
-      octx.fillStyle = '#f59e0b'; octx.font = `bold ${11 / vs}px monospace`;
-      octx.textAlign = 'center'; octx.textBaseline = 'bottom';
-      octx.fillText(`${Math.round(rw)} × ${Math.round(rh)} cm`, rx + rw / 2, ry - 6 / vs);
+      const shape = roomShapeRef.current;
+      if (shape === 'rect') {
+        const rx = Math.min(start.x, sm.x), ry = Math.min(start.y, sm.y);
+        const rw = Math.abs(sm.x - start.x), rh = Math.abs(sm.y - start.y);
+        octx.fillStyle = 'rgba(245,158,11,0.12)';
+        octx.fillRect(rx, ry, rw, rh);
+        octx.strokeStyle = '#f59e0b'; octx.lineWidth = 2 / vs;
+        octx.setLineDash([8 / vs, 4 / vs]); octx.strokeRect(rx, ry, rw, rh); octx.setLineDash([]);
+        octx.fillStyle = '#f59e0b'; octx.font = `bold ${11 / vs}px monospace`;
+        octx.textAlign = 'center'; octx.textBaseline = 'bottom';
+        octx.fillText(`${Math.round(rw)} × ${Math.round(rh)} cm`, rx + rw / 2, ry - 6 / vs);
+      } else {
+        const pts = getPointsForShape(shape, start, sm);
+        octx.beginPath();
+        octx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) octx.lineTo(pts[i].x, pts[i].y);
+        octx.closePath();
+        octx.fillStyle = 'rgba(245,158,11,0.12)';
+        octx.fill();
+        octx.strokeStyle = '#f59e0b'; octx.lineWidth = 2 / vs;
+        octx.setLineDash([8 / vs, 4 / vs]); octx.stroke(); octx.setLineDash([]);
+        const rx = Math.min(start.x, sm.x), ry = Math.min(start.y, sm.y);
+        const rw = Math.abs(sm.x - start.x), rh = Math.abs(sm.y - start.y);
+        octx.fillStyle = '#f59e0b'; octx.font = `bold ${11 / vs}px monospace`;
+        octx.textAlign = 'center'; octx.textBaseline = 'bottom';
+        octx.fillText(`${shape} · ${Math.round(rw)} × ${Math.round(rh)} cm`, rx + rw / 2, ry - 6 / vs);
+      }
     }
 
     // ── Polygon room in-progress preview ──────────────────────────────────────
@@ -678,7 +734,7 @@ export function FloorPlan2D() {
 
     // ── drawing tools ──────────────────────────────────────────────────────
     if (activeTool === 'wall') {
-      dragRef.current = { kind: 'draw-wall', start: sp };
+      dragRef.current = { kind: 'draw-wall', start: snapWallPoint(world) };
       return;
     }
     if (activeTool === 'room') {
@@ -827,11 +883,11 @@ export function FloorPlan2D() {
     }
 
     if (drag.kind === 'move-wall-start') {
-      storeRef.current.updateWall(drag.id, { start: sp });
+      storeRef.current.updateWall(drag.id, { start: snapWallPoint(world, drag.id) });
       return;
     }
     if (drag.kind === 'move-wall-end') {
-      storeRef.current.updateWall(drag.id, { end: sp });
+      storeRef.current.updateWall(drag.id, { end: snapWallPoint(world, drag.id) });
       return;
     }
     if (drag.kind === 'move-wall') {
@@ -868,9 +924,10 @@ export function FloorPlan2D() {
     const { activeTool, addWall, addRoom, selectedRoomType } = storeRef.current;
 
     if (drag?.kind === 'draw-wall') {
-      if (dist(drag.start, sp) > 10) {
+      const endPt = snapWallPoint(world);
+      if (dist(drag.start, endPt) > 10) {
         addWall({
-          id: 'w_' + Math.random().toString(36).slice(2), start: drag.start, end: sp,
+          id: 'w_' + Math.random().toString(36).slice(2), start: drag.start, end: endPt,
           thickness: WALL_T, height: 280, material: 'white-paint'
         });
       }
@@ -878,13 +935,13 @@ export function FloorPlan2D() {
     if (drag?.kind === 'draw-room') {
       const rw = Math.abs(sp.x - drag.start.x), rh = Math.abs(sp.y - drag.start.y);
       if (rw > 20 && rh > 20) {
-        const rx = Math.min(drag.start.x, sp.x), ry = Math.min(drag.start.y, sp.y);
         const clr = ROOM_COLORS[selectedRoomType] ?? ROOM_COLORS.living;
+        const points = getPointsForShape(roomShapeRef.current, drag.start, sp);
         addRoom({
           id: 'r_' + Math.random().toString(36).slice(2),
           name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
           type: selectedRoomType,
-          points: [{ x: rx, y: ry }, { x: rx + rw, y: ry }, { x: rx + rw, y: ry + rh }, { x: rx, y: ry + rh }],
+          points,
           floorMaterial: 'hardwood', color: clr.fill
         });
       }
@@ -892,6 +949,57 @@ export function FloorPlan2D() {
 
     dragRef.current = null;
   }, [toWorld]);
+
+  // ── export / import ────────────────────────────────────────────────────────
+  const handleExport = useCallback(() => {
+    const { walls, rooms, doors, windows, furniture } = storeRef.current;
+    const data = { version: 1, exportedAt: new Date().toISOString(), walls, rooms, doors, windows, furniture };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `floorplan-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleImportClick = useCallback(() => { fileInputRef.current?.click(); }, []);
+
+  const handleImportFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if (!data || !Array.isArray(data.walls) || !Array.isArray(data.rooms)) {
+          throw new Error('missing walls/rooms arrays');
+        }
+        const s = storeRef.current;
+        // clear current plan (walls last, since doors/windows reference wallId)
+        [...s.furniture].forEach(f => s.deleteFurniture(f.id));
+        [...s.doors].forEach(d => s.deleteDoor(d.id));
+        [...s.windows].forEach(w => s.deleteWindow(w.id));
+        [...s.rooms].forEach(r => s.deleteRoom(r.id));
+        [...s.walls].forEach(w => s.deleteWall(w.id));
+        // re-add from file (walls first so door/window wallId refs resolve)
+        (data.walls as Wall[]).forEach(w => s.addWall(w));
+        (data.rooms as Room[]).forEach(r => s.addRoom(r));
+        (data.doors ?? []).forEach((d: any) => s.addDoor(d));
+        (data.windows ?? []).forEach((w: any) => s.addWindow(w));
+        (data.furniture as Furniture[] ?? []).forEach(f => s.addFurniture(f));
+        s.setSelectedId(null);
+        setImportError(null);
+      } catch (err) {
+        setImportError('Could not load that file — not a valid floor plan JSON.');
+        setTimeout(() => setImportError(null), 4000);
+      }
+    };
+    reader.readAsText(file);
+  }, []);
 
   // ── wheel zoom ─────────────────────────────────────────────────────────────
   const onWheel = useCallback((e: React.WheelEvent) => {
@@ -921,6 +1029,46 @@ export function FloorPlan2D() {
         onMouseLeave={() => { dragRef.current = null; }}
         onWheel={onWheel}
       />
+
+      {/* export / import */}
+      <div className="absolute top-3 right-3 z-30 flex gap-2">
+        <button
+          onClick={handleExport}
+          className="px-3 py-1.5 bg-black/75 border border-emerald-500/40 rounded-full text-[11px] text-emerald-400 font-mono hover:bg-black/90 transition-colors"
+        >
+          ⬇ Export
+        </button>
+        <button
+          onClick={handleImportClick}
+          className="px-3 py-1.5 bg-black/75 border border-blue-400/40 rounded-full text-[11px] text-blue-300 font-mono hover:bg-black/90 transition-colors"
+        >
+          ⬆ Import
+        </button>
+        <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
+      </div>
+      {importError && (
+        <div className="absolute top-14 right-3 z-30 px-3 py-1.5 bg-red-950/90 border border-red-500/40 rounded-full text-[11px] text-red-300 font-mono pointer-events-none">
+          {importError}
+        </div>
+      )}
+
+      {/* room shape picker */}
+      {store.activeTool === 'room' && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex gap-1.5">
+          {ROOM_SHAPES.map(shape => (
+            <button
+              key={shape}
+              onClick={() => setRoomShape(shape)}
+              className={`px-2.5 py-1 rounded-full text-[10px] font-mono border transition-colors ${roomShape === shape
+                  ? 'bg-amber-500 text-black border-amber-500'
+                  : 'bg-black/75 text-amber-400 border-amber-500/40 hover:bg-black/90'
+                }`}
+            >
+              {shape === 'rect' ? 'Rect' : shape.replace('-shape', '').toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* tool hints */}
       {store.activeTool === 'wall' && (
