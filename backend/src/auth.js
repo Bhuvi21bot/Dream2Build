@@ -21,12 +21,12 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 6,
   },
-  
+
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }
+    },
   },
 
   session: {
@@ -40,4 +40,15 @@ export const auth = betterAuth({
     process.env.FRONTEND_URL || "http://localhost:5173",
     "http://localhost:5000",
   ],
+
+  // Required because the frontend (vercel.app) and backend (onrender.com)
+  // are different domains — without this, browsers won't send the auth
+  // cookie back on cross-origin requests, even with credentials: "include".
+  advanced: {
+    useSecureCookies: true,
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
 });
