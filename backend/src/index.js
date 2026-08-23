@@ -12,11 +12,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+import cors from "cors";
+
 const app = express();
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true,
 };
+
+app.use(cors(corsOptions));
 app.use(cors(corsOptions));
 
 // Better Auth Middleware - must be mounted before body parsers
@@ -36,18 +41,18 @@ app.post('/api/payments/create-order', async (req, res) => {
     // Basic verification - should use auth context in a real scenario
     const { plan } = req.body;
     let amount = 0;
-    
+
     if (plan === 'pro') amount = 1000 * 100; // 1000 INR
     if (plan === 'enterprise') amount = 5000 * 100; // 5000 INR
-    
+
     if (amount === 0) return res.status(400).json({ error: 'Invalid plan' });
-    
+
     const order = await razorpay.orders.create({
       amount,
       currency: 'INR',
       receipt: `receipt_${Date.now()}`
     });
-    
+
     res.json(order);
   } catch (error) {
     console.error(error);
@@ -78,13 +83,13 @@ app.get('/api/subscription/status', async (req, res) => {
   // Normally extract user ID from auth session
   const userId = req.query.userId;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-  
+
   try {
     const [rows] = await pool.query('SELECT * FROM subscriptions WHERE user_id = ?', [userId]);
     const sub = rows[0] || { plan: 'free', status: 'active', ai_generations_used: 0, projects_used: 0 };
-    
+
     const limits = PLAN_LIMITS[sub.plan];
-    
+
     res.json({
       plan: sub.plan,
       status: sub.status,

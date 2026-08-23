@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "better-auth": "^1.7.0",
+    "cors": "^2.8.6",
     "mysql2": "^3.23.3"
   }
 }
