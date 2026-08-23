@@ -7,7 +7,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({
+  path: path.resolve(__dirname, "../../.env")
+});
 
 export const auth = betterAuth({
   database: pool,
@@ -29,6 +31,11 @@ export const auth = betterAuth({
     },
   },
 
+  trustedOrigins: [
+    "http://localhost:5173",
+    "https://dream2build.vercel.app",
+  ],
+
   session: {
     cookieCache: {
       enabled: true,
@@ -36,14 +43,6 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [
-    process.env.FRONTEND_URL || "http://localhost:5173",
-    "http://localhost:5000",
-  ],
-
-  // Required because the frontend (vercel.app) and backend (onrender.com)
-  // are different domains — without this, browsers won't send the auth
-  // cookie back on cross-origin requests, even with credentials: "include".
   advanced: {
     useSecureCookies: true,
     defaultCookieAttributes: {
