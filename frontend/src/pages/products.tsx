@@ -210,10 +210,10 @@ export default function Products() {
 
                 <Link href={
                   product.id === "floor-planner" ? "/floor-planner" :
-                  product.id === "interior" ? "/interior-ai" :
-                  product.id === "climate" ? "/climate-energy" :
-                  product.id === "cost" ? "/cost-estimator" :
-                  "/boq"
+                    product.id === "interior" ? "/interior-ai" :
+                      product.id === "climate" ? "/climate-energy" :
+                        product.id === "cost" ? "/cost-estimator" :
+                          "/boq"
                 }>
                   <Button variant="outline" className="mt-2 rounded-full border-[#1E2A22]/20">
                     Try {product.title.split(" ")[0]} <ArrowRight className="ml-2 h-4 w-4" />
