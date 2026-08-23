@@ -10,9 +10,10 @@ import { pool } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-import cors from "cors";
+dotenv.config({
+  path: path.resolve(__dirname, '../../.env')
+});
 
 const app = express();
 
@@ -21,7 +22,6 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use(cors(corsOptions));
 app.use(cors(corsOptions));
 
 // Better Auth Middleware - must be mounted before body parsers
@@ -38,14 +38,15 @@ const razorpay = new Razorpay({
 // Payment endpoint for upgrades
 app.post('/api/payments/create-order', async (req, res) => {
   try {
-    // Basic verification - should use auth context in a real scenario
     const { plan } = req.body;
     let amount = 0;
 
-    if (plan === 'pro') amount = 1000 * 100; // 1000 INR
-    if (plan === 'enterprise') amount = 5000 * 100; // 5000 INR
+    if (plan === 'pro') amount = 1000 * 100;
+    if (plan === 'enterprise') amount = 5000 * 100;
 
-    if (amount === 0) return res.status(400).json({ error: 'Invalid plan' });
+    if (amount === 0) {
+      return res.status(400).json({ error: 'Invalid plan' });
+    }
 
     const order = await razorpay.orders.create({
       amount,
@@ -70,23 +71,52 @@ const PLAN_LIMITS = {
   pro: {
     projects: Infinity,
     ai_generations: 100,
-    features: ['basic_2d', 'basic_3d', 'ai_2d_to_3d', 'climate_analysis', 'furniture_placement', 'cost_estimation', 'advanced_rendering']
+    features: [
+      'basic_2d',
+      'basic_3d',
+      'ai_2d_to_3d',
+      'climate_analysis',
+      'furniture_placement',
+      'cost_estimation',
+      'advanced_rendering'
+    ]
   },
   enterprise: {
     projects: Infinity,
     ai_generations: Infinity,
-    features: ['basic_2d', 'basic_3d', 'ai_2d_to_3d', 'climate_analysis', 'furniture_placement', 'cost_estimation', 'advanced_rendering', 'team_collab', 'analytics']
+    features: [
+      'basic_2d',
+      'basic_3d',
+      'ai_2d_to_3d',
+      'climate_analysis',
+      'furniture_placement',
+      'cost_estimation',
+      'advanced_rendering',
+      'team_collab',
+      'analytics'
+    ]
   }
 };
 
 app.get('/api/subscription/status', async (req, res) => {
-  // Normally extract user ID from auth session
   const userId = req.query.userId;
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   try {
-    const [rows] = await pool.query('SELECT * FROM subscriptions WHERE user_id = ?', [userId]);
-    const sub = rows[0] || { plan: 'free', status: 'active', ai_generations_used: 0, projects_used: 0 };
+    const [rows] = await pool.query(
+      'SELECT * FROM subscriptions WHERE user_id = ?',
+      [userId]
+    );
+
+    const sub = rows[0] || {
+      plan: 'free',
+      status: 'active',
+      ai_generations_used: 0,
+      projects_used: 0
+    };
 
     const limits = PLAN_LIMITS[sub.plan];
 
@@ -100,11 +130,13 @@ app.get('/api/subscription/status', async (req, res) => {
       entitlements: limits
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Database error' });
   }
 });
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
