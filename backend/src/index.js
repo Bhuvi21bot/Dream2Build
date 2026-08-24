@@ -17,8 +17,23 @@ dotenv.config({
 
 const app = express();
 
+// --- CORS setup ---
+// Keep this list in sync with the `trustedOrigins` array in auth.js
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://dream2build.vercel.app",
+];
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: function (origin, callback) {
+    // allow requests with no origin (curl, mobile apps, same-origin server calls)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 };
 
