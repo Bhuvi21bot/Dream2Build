@@ -14,7 +14,7 @@ dotenv.config({
 export const auth = betterAuth({
   database: pool,
 
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5001",
   basePath: "/api/auth",
 
   secret: process.env.BETTER_AUTH_SECRET,

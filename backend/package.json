@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "auth:generate": "npx @better-auth/cli generate",
+    "auth:migrate": "npx @better-auth/cli migrate"
   },
   "dependencies": {
     "express": "^4.21.0",
