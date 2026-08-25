@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
-import { Camera, Orbit, User, Map, Eye } from 'lucide-react';
+import { Camera, RotateCcw, User, Map, Eye } from 'lucide-react';
 
 export function RightSidebar() {
   const { 
@@ -116,7 +116,7 @@ export function RightSidebar() {
                 </h3>
                 
                 <div className="grid grid-cols-2 gap-2">
-                  <CameraModeBtn mode="orbit" current={cameraMode} set={setCameraMode} icon={Orbit} label="Orbit" />
+                  <CameraModeBtn mode="orbit" current={cameraMode} set={setCameraMode} icon={RotateCcw} label="Orbit" />
                   <CameraModeBtn mode="firstperson" current={cameraMode} set={setCameraMode} icon={User} label="First Person" />
                   <CameraModeBtn mode="top" current={cameraMode} set={setCameraMode} icon={Map} label="Top Down" />
                   <CameraModeBtn mode="dollhouse" current={cameraMode} set={setCameraMode} icon={Eye} label="Dollhouse" />
