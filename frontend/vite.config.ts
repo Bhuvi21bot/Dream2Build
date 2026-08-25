@@ -16,7 +16,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
       "@assets": path.resolve(__dirname, "attached_assets"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "@react-three/fiber", "@react-three/drei", "three"],
+  },
+
+  optimizeDeps: {
+    include: ["react", "react-dom", "@react-three/fiber", "@react-three/drei", "three"],
   },
 
   server: {

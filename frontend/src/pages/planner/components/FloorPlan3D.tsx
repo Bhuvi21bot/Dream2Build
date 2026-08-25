@@ -1,9 +1,43 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense, Component, ReactNode } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, PointerLockControls, Environment, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { usePlannerStore } from '../store';
 import { Wall, Door, Window, Furniture, FurnitureType } from '../types';
+
+// ─── Error boundary ───────────────────────────────────────────────────────────
+// Catches render errors from inside <Canvas> so a bad frame (a future R3F/drei
+// hook-order issue in a sibling toolbar, a bad geometry, etc.) degrades to a
+// retry message instead of crashing the whole page and tearing down the
+// WebGL context.
+class Canvas3DErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown, info: unknown) {
+    console.error('3D view failed to render:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-background text-sm text-muted-foreground">
+          <p>The 3D view hit an error and couldn't render.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="px-3 py-1.5 rounded-full border border-amber-500/40 text-amber-500 text-xs font-mono hover:bg-amber-500/10"
+          >
+            Retry 3D view
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ─── Floor material definitions ──────────────────────────────────────────────
 interface MatDef {
@@ -355,7 +389,12 @@ function SceneContent() {
         shadow-camera-bottom={-1500}
       />
       <directionalLight position={[-800, 800, -800]} intensity={0.4} />
-      <Environment preset="apartment" />
+
+      {/* Environment loads an HDRI asynchronously — Suspense keeps that from
+          ever rendering half-initialized while assets stream in. */}
+      <Suspense fallback={null}>
+        <Environment preset="apartment" />
+      </Suspense>
 
       {/* ── Floors ── */}
       {rooms.map((room) => {
@@ -412,20 +451,36 @@ export function FloorPlan3D() {
 
   return (
     <div className="w-full h-full bg-background">
-      <Canvas shadows gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
-        {cameraMode === 'top' ? (
-          <OrthographicCamera makeDefault position={[500, 2000, 500]} zoom={0.5} near={0.1} far={5000} />
-        ) : (
-          <PerspectiveCamera makeDefault fov={60} near={1} far={10000} />
-        )}
+      <Canvas3DErrorBoundary>
+        <Canvas
+          shadows
+          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+          onCreated={({ gl }) => {
+            // Surface a lost-context event as a console warning instead of a
+            // silent black canvas — helps distinguish "R3F crashed" (a code
+            // bug) from "GPU/driver dropped the context" (an environment issue).
+            gl.domElement.addEventListener('webglcontextlost', (e) => {
+              e.preventDefault();
+              console.warn('WebGL context lost on the 3D canvas.');
+            });
+          }}
+        >
+          {cameraMode === 'top' ? (
+            <OrthographicCamera makeDefault position={[500, 2000, 500]} zoom={0.5} near={0.1} far={5000} />
+          ) : (
+            <PerspectiveCamera makeDefault fov={60} near={1} far={10000} />
+          )}
 
-        <SceneContent />
+          <Suspense fallback={null}>
+            <SceneContent />
+          </Suspense>
 
-        {cameraMode === 'orbit' && <OrbitControls target={[500, 0, 500]} makeDefault maxPolarAngle={Math.PI / 2 - 0.05} />}
-        {cameraMode === 'dollhouse' && <OrbitControls target={[500, 0, 500]} makeDefault maxPolarAngle={Math.PI / 2 - 0.05} />}
-        {cameraMode === 'top' && <OrbitControls target={[500, 0, 500]} enableRotate={false} />}
-        {cameraMode === 'firstperson' && <PointerLockControls />}
-      </Canvas>
+          {cameraMode === 'orbit' && <OrbitControls target={[500, 0, 500]} makeDefault maxPolarAngle={Math.PI / 2 - 0.05} />}
+          {cameraMode === 'dollhouse' && <OrbitControls target={[500, 0, 500]} makeDefault maxPolarAngle={Math.PI / 2 - 0.05} />}
+          {cameraMode === 'top' && <OrbitControls target={[500, 0, 500]} enableRotate={false} />}
+          {cameraMode === 'firstperson' && <PointerLockControls />}
+        </Canvas>
+      </Canvas3DErrorBoundary>
     </div>
   );
 }
