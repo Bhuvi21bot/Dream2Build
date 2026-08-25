@@ -56,8 +56,8 @@ app.post('/api/payments/create-order', async (req, res) => {
     const { plan } = req.body;
     let amount = 0;
 
-    if (plan === 'pro') amount = 1000 * 100;
-    if (plan === 'enterprise') amount = 5000 * 100;
+    if (plan === 'pro') amount = 2499 * 100;
+    if (plan === 'enterprise') amount = 8499 * 100;
 
     if (amount === 0) {
       return res.status(400).json({ error: 'Invalid plan' });

@@ -14,26 +14,135 @@ import {
 export function AIFloorPlannerPage() {
   const [prompt, setPrompt] = useState("Modern 3-bedroom cabin with large south-facing windows")
   const [isGenerating, setIsGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [rooms, setRooms] = useState<any>([])
   const { toast } = useToast()
 
-  const handleGenerate = () => {
+  /** Deterministically generate a varied layout based on the user's prompt text */
+  function generateLayoutFromPrompt(promptText: string): any[] {
+    const lower = promptText.toLowerCase()
+
+    // Detect bedroom count
+    const bedroomMatch = lower.match(/(\d+)[\s-]bedroom/)
+    const bedroomCount = bedroomMatch ? Math.min(parseInt(bedroomMatch[1], 10), 5) : 2
+
+    // Detect building / style type
+    const isOffice = /office|commercial|workspace|coworking/.test(lower)
+    const isCabin = /cabin|cottage|lodge|retreat/.test(lower)
+    const isStudio = /studio|apartment|flat|micro/.test(lower)
+    const isVilla = /villa|mansion|luxury|estate/.test(lower)
+    const isOpenPlan = /open[\s-]plan|open[\s-]concept|loft/.test(lower)
+
+    if (isOffice) {
+      return [
+        { x: 5, y: 5, w: 55, h: 40, label: "Open Office", fill: "#FAF1EA" },
+        { x: 65, y: 5, w: 30, h: 18, label: "Meeting Rm", fill: "#FAF8F3" },
+        { x: 65, y: 28, w: 30, h: 17, label: "Server Rm", fill: "#e7bc91" },
+        { x: 5, y: 50, w: 30, h: 45, label: "Reception", fill: "#FAF1EA" },
+        { x: 40, y: 50, w: 55, h: 45, label: "Boardroom", fill: "#FAF8F3" },
+      ]
+    }
+
+    if (isStudio) {
+      return [
+        { x: 8, y: 8, w: 55, h: 50, label: "Living / Bed", fill: "#FAF1EA" },
+        { x: 68, y: 8, w: 24, h: 25, label: "Kitchen", fill: "#FAF8F3" },
+        { x: 68, y: 38, w: 24, h: 20, label: "Bathroom", fill: "#e7bc91" },
+        { x: 8, y: 63, w: 84, h: 29, label: "Balcony / Storage", fill: "#FAF8F3" },
+      ]
+    }
+
+    if (isCabin) {
+      const beds = Array.from({ length: Math.min(bedroomCount, 3) }, (_, i) => ({
+        x: 5 + i * 32,
+        y: 55,
+        w: 28,
+        h: 35,
+        label: i === 0 ? "Master Bed" : `Bed ${i + 1}`,
+        fill: i % 2 === 0 ? "#FAF1EA" : "#FAF8F3",
+      }))
+      return [
+        { x: 5, y: 5, w: 90, h: 44, label: "Great Room", fill: "#FAF1EA" },
+        ...beds,
+        { x: 5 + Math.min(bedroomCount, 3) * 32, y: 55, w: 90 - Math.min(bedroomCount, 3) * 32, h: 35, label: "Bathroom", fill: "#e7bc91" },
+      ]
+    }
+
+    if (isVilla) {
+      const beds = Array.from({ length: Math.min(bedroomCount, 5) }, (_, i) => ({
+        x: 5 + (i % 3) * 30,
+        y: 55 + Math.floor(i / 3) * 22,
+        w: 25,
+        h: 18,
+        label: i === 0 ? "Master Suite" : `Bed ${i + 1}`,
+        fill: i % 2 === 0 ? "#FAF1EA" : "#FAF8F3",
+      }))
+      return [
+        { x: 5, y: 5, w: 55, h: 44, label: "Living Room", fill: "#FAF1EA" },
+        { x: 65, y: 5, w: 30, h: 22, label: "Dining", fill: "#FAF8F3" },
+        { x: 65, y: 32, w: 30, h: 17, label: "Kitchen", fill: "#e7bc91" },
+        ...beds,
+      ]
+    }
+
+    // Default: residential, vary by bedroom count and open-plan flag
+    const living = isOpenPlan
+      ? { x: 5, y: 5, w: 60, h: 44, label: "Open Living/Kitchen", fill: "#FAF1EA" }
+      : { x: 5, y: 5, w: 40, h: 44, label: "Living Area", fill: "#FAF1EA" }
+
+    const kitchen = isOpenPlan
+      ? null
+      : { x: 50, y: 5, w: 45, h: 22, label: "Kitchen", fill: "#FAF8F3" }
+
+    const bathroom = { x: 50, y: 32, w: 45, h: 17, label: "Bathroom", fill: "#e7bc91" }
+
+    const beds = Array.from({ length: bedroomCount }, (_, i) => ({
+      x: 5 + (i % 2) * 48,
+      y: 54 + Math.floor(i / 2) * 24,
+      w: 43,
+      h: 20,
+      label: i === 0 ? "Master Bed" : `Bed ${i + 1}`,
+      fill: i % 2 === 0 ? "#FAF1EA" : "#FAF8F3",
+    }))
+
+    return [living, kitchen, bathroom, ...beds].filter(Boolean)
+  }
+
+  const handleGenerate = async () => {
     if (!prompt.trim()) return
+    setError(null)
     setIsGenerating(true)
-    setTimeout(() => {
-      setRooms([
-        { x: 10, y: 10, w: 40, h: 40, label: "Living Area", fill: "#FAF1EA" },
-        { x: 55, y: 10, w: 35, h: 22, label: "Kitchen", fill: "#FAF8F3" },
-        { x: 55, y: 35, w: 35, h: 15, label: "Bathroom", fill: "#e7bc91" },
-        { x: 10, y: 55, w: 38, h: 35, label: "Master Bed", fill: "#FAF1EA" },
-        { x: 52, y: 55, w: 38, h: 35, label: "Guest Bed", fill: "#FAF8F3" }
-      ])
-      setIsGenerating(false)
+    setRooms([])
+
+    try {
+      // Simulate async AI API call — replace with real POST /api/ai/floor-plan
+      await new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate occasional failures (5% chance)
+          if (prompt.trim().toLowerCase() === "fail" || Math.random() < 0.05) {
+            reject(new Error("AI generation failed. Please try a different prompt."))
+          } else {
+            resolve()
+          }
+        }, 1800)
+      })
+
+      const layout = generateLayoutFromPrompt(prompt)
+      setRooms(layout)
       toast({
         title: "Layout Generated!",
-        description: "Your structural layout is ready. You can now tweak details or load it into the editor.",
+        description: `Synthesized ${layout.length} rooms from your prompt. Tweak details or load into the editor.`,
       })
-    }, 2000)
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.")
+      toast({
+        title: "Generation Failed",
+        description: err.message || "AI could not process this prompt.",
+        variant: "destructive" as any,
+      })
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   return (
@@ -61,6 +170,11 @@ export function AIFloorPlannerPage() {
                 {isGenerating ? "Synthesizing Layout..." : "Generate Floor Plan"}
                 <Sparkles className="h-4 w-4" />
               </Button>
+              {error && (
+                <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                  <span className="mt-0.5 shrink-0">⚠</span> {error}
+                </div>
+              )}
             </Card>
           </div>
 
@@ -289,9 +403,9 @@ export function LiveCostEstimatorPage() {
   const [quality, setQuality] = useState("standard")
 
   const getBaseCost = () => {
-    let rate = 150
-    if (quality === "premium") rate = 240
-    if (quality === "eco") rate = 190
+    let rate = 12000  // ₹12,000 per sqft (standard INR construction rate)
+    if (quality === "premium") rate = 20000
+    if (quality === "eco") rate = 15000
     return sqft * rate
   }
 
@@ -350,9 +464,9 @@ export function LiveCostEstimatorPage() {
               <div className="space-y-4">
                 <span className="font-mono text-xs uppercase tracking-widest text-[#a47148]">Estimated Total Budget</span>
                 <div className="text-5xl font-serif font-bold text-[#1E2A22]">
-                  ${getBaseCost().toLocaleString()}
+                  ₹{getBaseCost().toLocaleString("en-IN")}
                 </div>
-                <p className="text-sm text-[#1E2A22]/60">Calculated based on standard construction rates in Zip {zipcode}. Includes standard labor averages and initial design drafts.</p>
+                <p className="text-sm text-[#1E2A22]/60">Calculated based on standard construction rates. Includes standard labour averages and initial design drafts.</p>
               </div>
 
               <div className="mt-8 border-t border-[#1E2A22]/10 pt-6 flex justify-between items-center">
@@ -374,11 +488,11 @@ export function MaterialBOQPage() {
   const [downloaded, setDownloaded] = useState(false)
 
   const boqData = [
-    { name: "Concrete Footings & Slab", qty: "48 cu. yd.", cost: "$8,200", status: "In Stock" },
-    { name: "Structural Rebar #4 & #5", qty: "1.4 tons", cost: "$3,100", status: "Shipped" },
-    { name: "Red Brick (Partition Walls)", qty: "4,600 pcs", cost: "$2,800", status: "Pending" },
-    { name: "Low-E South-Facing Windows", qty: "8 units", cost: "$9,400", status: "In Stock" },
-    { name: "Hardwood Engineered Flooring", qty: "1,200 sqft", cost: "$6,200", status: "Pending" }
+    { name: "Concrete Footings & Slab", qty: "48 cu. yd.", cost: "₹6,80,000", status: "In Stock" },
+    { name: "Structural Rebar #4 & #5", qty: "1.4 tons", cost: "₹2,58,000", status: "Shipped" },
+    { name: "Red Brick (Partition Walls)", qty: "4,600 pcs", cost: "₹2,30,000", status: "Pending" },
+    { name: "Low-E South-Facing Windows", qty: "8 units", cost: "₹7,80,000", status: "In Stock" },
+    { name: "Hardwood Engineered Flooring", qty: "1,200 sqft", cost: "₹5,15,000", status: "Pending" }
   ]
 
   return (

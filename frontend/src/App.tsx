@@ -25,6 +25,8 @@ import {
   HireDesigner,
 } from "@/pages/entry-pages";
 
+import { PrePlannerSetup } from "@/pages/pre-planner-setup";
+
 import {
   AIFloorPlannerPage,
   InteriorAIPage,
@@ -89,6 +91,7 @@ function Router() {
             <Route path="/import" component={ImportPlan} />
             <Route path="/templates" component={Templates} />
             <Route path="/designers" component={HireDesigner} />
+            <Route path="/start-from-scratch" component={PrePlannerSetup} />
 
             {/* AI TOOLS */}
             <Route path="/ai-floor-planner" component={AIFloorPlannerPage} />

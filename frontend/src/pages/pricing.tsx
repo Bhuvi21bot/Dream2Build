@@ -56,8 +56,8 @@ const TIERS = [
   {
     name: "Drafting",
     tagline: "Pro",
-    monthly: 29,
-    annual: 23,
+    monthly: 2499,
+    annual: 1999,
     desc: "For homeowners and independent designers taking a project to completion.",
     features: [
       { label: "Unlimited projects", included: true },
@@ -74,8 +74,8 @@ const TIERS = [
   {
     name: "Studio",
     tagline: "Firm",
-    monthly: 99,
-    annual: 79,
+    monthly: 8499,
+    annual: 6999,
     desc: "For architecture firms and builders running multiple clients at once.",
     features: [
       { label: "Everything in Drafting", included: true },
@@ -131,7 +131,7 @@ import { useSession } from "@/lib/auth-client"
 import { useToast } from "@/hooks/use-toast"
 
 function formatPrice(n: number) {
-  return n === 0 ? "$0" : `$${n}`
+  return n === 0 ? "₹0" : `₹${n.toLocaleString("en-IN")}`
 }
 
 export default function Pricing() {
@@ -159,7 +159,7 @@ export default function Pricing() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       })
-      
+
       const order = await response.json()
       if (order.error) throw new Error(order.error)
 
@@ -266,8 +266,8 @@ export default function Pricing() {
                   size="lg"
                   onClick={() => handleCheckout(tier.name)}
                   className={`mb-8 w-full rounded-full font-semibold ${tier.popular
-                      ? "bg-[#D97A3F] text-white hover:bg-[#c66a30]"
-                      : "border border-[#1E2A22]/20 bg-white text-[#1E2A22] hover:bg-[#FAF8F3]"
+                    ? "bg-[#D97A3F] text-white hover:bg-[#c66a30]"
+                    : "border border-[#1E2A22]/20 bg-white text-[#1E2A22] hover:bg-[#FAF8F3]"
                     }`}
                 >
                   {tier.cta}

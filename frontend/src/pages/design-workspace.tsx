@@ -45,7 +45,7 @@ export function DesignWorkspace({ category }: { category: string }) {
             <Button variant="outline" className="rounded-full flex gap-1.5 border-[#1E2A22]/10" onClick={handleSave}>
               <Save className="h-4 w-4" /> Save
             </Button>
-            <Button className="rounded-full bg-[#a47148] text-white hover:bg-[#8e603d] flex gap-1.5" onClick={() => window.location.href = "/planner"}>
+            <Button className="rounded-full bg-[#a47148] text-white hover:bg-[#8e603d] flex gap-1.5" onClick={() => window.location.href = "/start-from-scratch"}>
               Open in 3D Planner <Play className="h-4 w-4 fill-white" />
             </Button>
           </div>
