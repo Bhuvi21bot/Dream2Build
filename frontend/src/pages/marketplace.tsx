@@ -64,12 +64,12 @@ function PlanGlyph({ seed }: { seed: number }) {
 }
 
 const PLANS = [
-  { id: 1, title: "The Glass House", creator: "@studiomodern", price: "$199", rating: "4.9", reviews: "1.2k", size: "4,200 sqft" },
-  { id: 2, title: "Desert Pavilion", creator: "@arid_arch", price: "$149", rating: "4.8", reviews: "850", size: "2,800 sqft" },
-  { id: 3, title: "Nordic Minimalist", creator: "@scandi_design", price: "$89", rating: "4.7", reviews: "2.4k", size: "1,850 sqft" },
-  { id: 4, title: "Urban Loft", creator: "@citybuilds", price: "$129", rating: "4.9", reviews: "3k+", size: "2,100 sqft" },
-  { id: 5, title: "Coastal Retreat", creator: "@pacific_homes", price: "$249", rating: "5.0", reviews: "450", size: "3,500 sqft" },
-  { id: 6, title: "Eco Cabin", creator: "@green_living", price: "$59", rating: "4.6", reviews: "1.1k", size: "950 sqft" },
+  { id: 1, title: "The Glass House", creator: "@studiomodern", price: "₹199", rating: "4.9", reviews: "1.2k", size: "4,200 sqft" },
+  { id: 2, title: "Desert Pavilion", creator: "@arid_arch", price: "₹149", rating: "4.8", reviews: "850", size: "2,800 sqft" },
+  { id: 3, title: "Nordic Minimalist", creator: "@scandi_design", price: "₹89", rating: "4.7", reviews: "2.4k", size: "1,850 sqft" },
+  { id: 4, title: "Urban Loft", creator: "@citybuilds", price: "₹129", rating: "4.9", reviews: "3k+", size: "2,100 sqft" },
+  { id: 5, title: "Coastal Retreat", creator: "@pacific_homes", price: "₹249", rating: "5.0", reviews: "450", size: "3,500 sqft" },
+  { id: 6, title: "Eco Cabin", creator: "@green_living", price: "₹59", rating: "4.6", reviews: "1.1k", size: "950 sqft" },
 ]
 
 const TABS = ["House Plans", "Interiors", "Furniture Packs"]
