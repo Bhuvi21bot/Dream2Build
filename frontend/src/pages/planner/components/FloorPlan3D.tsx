@@ -411,7 +411,7 @@ function SceneContent() {
 
         return (
           <group key={room.id}>
-            <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]}>
+            <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
               <mesh receiveShadow castShadow>
                 <extrudeGeometry args={[shape, extrudeSettings]} />
                 <meshStandardMaterial color={matDef.color} roughness={matDef.roughness} metalness={matDef.metalness} />
