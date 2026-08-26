@@ -31,8 +31,10 @@ const HANDLE_R = 7;           // handle hit radius in world px
 const SNAP_DIST = 40;          // wall-snap radius for door/window
 const WALL_JOIN_DIST = 28;        // radius (world px) within which a new/dragged wall endpoint snaps to an existing wall's endpoint, joining the two walls
 
-const ROOM_SHAPES = ['rect', 'l-shape', 'u-shape', 't-shape', 'octagonal'] as const;
-type RoomShape = typeof ROOM_SHAPES[number];
+// Room shape ('square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal') is owned by the
+// store as `selectedRoomShape` / `setSelectedRoomShape` — picked via LeftSidebar's shape
+// buttons. getPointsForShape() below already treats anything it doesn't recognize (including
+// 'square') as a plain rectangle, so no local shape state is needed here.
 
 const ROOM_COLORS: Record<RoomType, { fill: string; stroke: string }> = {
   living: { fill: 'rgba(218,178,120,0.4)', stroke: '#d4a96a' },
@@ -194,11 +196,6 @@ export function FloorPlan2D() {
   const storeRef = useRef(store);
   storeRef.current = store;
 
-  // ── room shape (for the 'room' drag-draw tool) ────────────────────────────
-  const [roomShape, setRoomShape] = useState<RoomShape>('rect');
-  const roomShapeRef = useRef(roomShape);
-  roomShapeRef.current = roomShape;
-
   // ── export / import ────────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -302,7 +299,7 @@ export function FloorPlan2D() {
     const { x: vx, y: vy, scale: vs } = viewRef.current;
     const W = canvas.width, H = canvas.height;
     const { walls, rooms, doors, windows, furniture, selectedId, activeTool,
-      showGrid, selectedFurnitureType, polygonPoints } = storeRef.current;
+      showGrid, selectedFurnitureType, polygonPoints, selectedRoomShape } = storeRef.current;
     const mouse = mouseRef.current;
 
     // ── main canvas ──────────────────────────────────────────────────────────
@@ -488,8 +485,8 @@ export function FloorPlan2D() {
 
     if (drag && drag.kind === 'draw-room' && activeTool === 'room') {
       const { start } = drag;
-      const shape = roomShapeRef.current;
-      if (shape === 'rect') {
+      const shape = selectedRoomShape;
+      if (shape === 'square') {
         const rx = Math.min(start.x, sm.x), ry = Math.min(start.y, sm.y);
         const rw = Math.abs(sm.x - start.x), rh = Math.abs(sm.y - start.y);
         octx.fillStyle = 'rgba(245,158,11,0.12)';
@@ -936,7 +933,7 @@ export function FloorPlan2D() {
       const rw = Math.abs(sp.x - drag.start.x), rh = Math.abs(sp.y - drag.start.y);
       if (rw > 20 && rh > 20) {
         const clr = ROOM_COLORS[selectedRoomType] ?? ROOM_COLORS.living;
-        const points = getPointsForShape(roomShapeRef.current, drag.start, sp);
+        const points = getPointsForShape(storeRef.current.selectedRoomShape, drag.start, sp);
         addRoom({
           id: 'r_' + Math.random().toString(36).slice(2),
           name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
@@ -1052,24 +1049,6 @@ export function FloorPlan2D() {
         </div>
       )}
 
-      {/* room shape picker */}
-      {store.activeTool === 'room' && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex gap-1.5">
-          {ROOM_SHAPES.map(shape => (
-            <button
-              key={shape}
-              onClick={() => setRoomShape(shape)}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-mono border transition-colors ${roomShape === shape
-                  ? 'bg-amber-500 text-black border-amber-500'
-                  : 'bg-black/75 text-amber-400 border-amber-500/40 hover:bg-black/90'
-                }`}
-            >
-              {shape === 'rect' ? 'Rect' : shape.replace('-shape', '').toUpperCase()}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* tool hints */}
       {store.activeTool === 'wall' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 bg-black/75 border border-amber-500/40 rounded-full text-[11px] text-amber-400 font-mono flex items-center gap-2 pointer-events-none backdrop-blur-sm">
@@ -1080,7 +1059,7 @@ export function FloorPlan2D() {
       {store.activeTool === 'room' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 bg-black/75 border border-amber-500/40 rounded-full text-[11px] text-amber-400 font-mono flex items-center gap-2 pointer-events-none backdrop-blur-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-          Click & drag to draw room · Drag to move · Vertex ● handles to reshape
+          Pick a shape in the sidebar, then click & drag to draw · Vertex ● handles to reshape
         </div>
       )}
       {store.activeTool === 'polygon-room' && (
