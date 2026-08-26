@@ -59,6 +59,76 @@ const FURNITURE_CFG: Record<FurnitureType, { w: number; d: number; fill: string;
   stairs: { w: 100, d: 250, fill: '#b8995a', label: 'Stairs' },
 };
 
+const FLOOR_MATERIALS_2D: Record<string, CanvasPattern | string> = {};
+
+function getFloorStyle(material: string): CanvasPattern | string {
+  if (FLOOR_MATERIALS_2D[material]) return FLOOR_MATERIALS_2D[material];
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = 40;
+  canvas.height = 40;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '#ccc';
+  
+  if (material === 'hardwood') {
+    ctx.fillStyle = 'rgba(180, 130, 90, 0.4)';
+    ctx.fillRect(0, 0, 40, 40);
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 10); ctx.lineTo(40, 10);
+    ctx.moveTo(0, 20); ctx.lineTo(40, 20);
+    ctx.moveTo(0, 30); ctx.lineTo(40, 30);
+    ctx.moveTo(10, 0); ctx.lineTo(10, 10);
+    ctx.moveTo(30, 10); ctx.lineTo(30, 20);
+    ctx.moveTo(15, 20); ctx.lineTo(15, 30);
+    ctx.moveTo(25, 30); ctx.lineTo(25, 40);
+    ctx.stroke();
+  } else if (material === 'tiles') {
+    ctx.fillStyle = 'rgba(210, 210, 210, 0.4)';
+    ctx.fillRect(0, 0, 40, 40);
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 20); ctx.lineTo(40, 20);
+    ctx.moveTo(20, 0); ctx.lineTo(20, 40);
+    ctx.stroke();
+  } else if (material === 'marble') {
+    ctx.fillStyle = 'rgba(240, 240, 240, 0.5)';
+    ctx.fillRect(0, 0, 40, 40);
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, 40); ctx.quadraticCurveTo(20, 20, 40, 0);
+    ctx.stroke();
+  } else if (material === 'carpet') {
+    ctx.fillStyle = 'rgba(190, 180, 170, 0.4)';
+    ctx.fillRect(0, 0, 40, 40);
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    for (let i = 0; i < 50; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random() * 40, Math.random() * 40, Math.random() * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (material === 'concrete') {
+    ctx.fillStyle = 'rgba(160, 160, 160, 0.4)';
+    ctx.fillRect(0, 0, 40, 40);
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    for (let i = 0; i < 30; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random() * 40, Math.random() * 40, Math.random() * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    ctx.fillStyle = 'rgba(200, 200, 200, 0.4)';
+    ctx.fillRect(0, 0, 40, 40);
+  }
+  
+  const pattern = ctx.createPattern(canvas, 'repeat') || '#ccc';
+  FLOOR_MATERIALS_2D[material] = pattern;
+  return pattern;
+}
+
 // ─── drag descriptor ──────────────────────────────────────────────────────────
 type DragKind =
   | { kind: 'pan'; vx0: number; vy0: number; sx0: number; sy0: number }
@@ -331,8 +401,20 @@ export function FloorPlan2D() {
       ctx.moveTo(room.points[0].x, room.points[0].y);
       room.points.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
       ctx.closePath();
-      ctx.fillStyle = clr.fill;
+      
+      // Store transform to reset after filling so pattern aligns to world space not room local
+      const currentTransform = ctx.getTransform();
+      ctx.resetTransform();
+      // calculate absolute scale/translation for pattern
+      ctx.translate(vx, vy);
+      ctx.scale(vs, vs);
+      
+      ctx.fillStyle = getFloorStyle(room.floorMaterial || 'hardwood');
       ctx.fill();
+      
+      // Restore transform
+      ctx.setTransform(currentTransform);
+      
       ctx.strokeStyle = isSel ? '#f59e0b' : clr.stroke;
       ctx.lineWidth = isSel ? 3 / vs : 1.5 / vs;
       ctx.stroke();
