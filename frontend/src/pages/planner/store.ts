@@ -101,7 +101,11 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     return { rooms: [...state.rooms, room], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateRoom: (id, room) => set((state) => ({ rooms: state.rooms.map(r => r.id === id ? { ...r, ...room } : r) })),
+  updateRoom: (id, room) => set((state) => {
+    const snap = snapshot(state);
+    const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
+    return { rooms: state.rooms.map(r => r.id === id ? { ...r, ...room } : r), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+  }),
   deleteRoom: (id) => set((state) => {
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
