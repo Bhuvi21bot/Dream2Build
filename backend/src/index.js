@@ -50,23 +50,25 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET || 'mock',
 });
 
-// Payment endpoint for upgrades
+// Payment endpoint — used for both subscription upgrades (plan: 'pro' | 'enterprise')
+// and one-off marketplace design purchases (designId + amount in rupees).
 app.post('/api/payments/create-order', async (req, res) => {
   try {
-    const { plan } = req.body;
+    const { plan, designId, amount: rawAmount } = req.body;
     let amount = 0;
 
     if (plan === 'pro') amount = 2499 * 100;
-    if (plan === 'enterprise') amount = 8499 * 100;
+    else if (plan === 'enterprise') amount = 8499 * 100;
+    else if (designId && rawAmount) amount = Math.round(Number(rawAmount) * 100);
 
-    if (amount === 0) {
-      return res.status(400).json({ error: 'Invalid plan' });
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid plan or amount' });
     }
 
     const order = await razorpay.orders.create({
       amount,
       currency: 'INR',
-      receipt: `receipt_${Date.now()}`
+      receipt: designId ? `design_${designId}_${Date.now()}` : `receipt_${Date.now()}`
     });
 
     res.json(order);
