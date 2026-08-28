@@ -1,14 +1,16 @@
 import { useState } from "react"
+import { useLocation } from "wouter"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, SlidersHorizontal, Star } from "lucide-react"
+import { PLANS, type MarketPlan } from "./marketplace-data"
 
 /**
  * Marketplace — "Blueprint & Paper" design system.
  * Same tokens as Home/Navbar: paper #FAF8F3, ink #1E2A22, primary #2F6F4E,
  * accent #D97A3F, highlight #F2C14E. No stock photography — every plan gets
- * an abstract floor-plan glyph, generated from its own data, so the grid
- * reads as a set of blueprints rather than a stock-photo gallery.
+ * an abstract floor-plan glyph generated from its OWN real room data, so the
+ * grid reads as a set of actual blueprints rather than a stock-photo gallery.
  */
 
 function BlueprintGrid({ className = "" }: { className?: string }) {
@@ -31,51 +33,41 @@ const PALETTES = [
   ["#B25D5D", "#2F6F4E", "#7A93A8", "#F2C14E"],
 ]
 
-const LAYOUTS = [
-  [
-    { x: 4, y: 4, w: 42, h: 30 }, { x: 50, y: 4, w: 46, h: 18 },
-    { x: 4, y: 38, w: 30, h: 28 }, { x: 38, y: 38, w: 58, h: 28 },
-  ],
-  [
-    { x: 4, y: 4, w: 60, h: 22 }, { x: 68, y: 4, w: 28, h: 44 },
-    { x: 4, y: 30, w: 28, h: 36 }, { x: 36, y: 40, w: 28, h: 26 },
-  ],
-  [
-    { x: 4, y: 4, w: 28, h: 62 }, { x: 36, y: 4, w: 60, h: 18 },
-    { x: 36, y: 26, w: 28, h: 40 }, { x: 68, y: 26, w: 28, h: 40 },
-  ],
-]
+// Generates the thumbnail directly from a plan's real room polygons — normalizes
+// their bounding box into a 0-100 x 0-70 viewBox so it always fits, regardless
+// of the plan's actual real-world scale.
+function PlanGlyph({ plan }: { plan: MarketPlan }) {
+  const rooms = plan.planData.rooms
+  const palette = PALETTES[plan.id % PALETTES.length]
 
-function PlanGlyph({ seed }: { seed: number }) {
-  const palette = PALETTES[seed % PALETTES.length]
-  const layout = LAYOUTS[seed % LAYOUTS.length]
+  const allPts = rooms.flatMap(r => r.points)
+  const minX = Math.min(...allPts.map(p => p.x)), maxX = Math.max(...allPts.map(p => p.x))
+  const minY = Math.min(...allPts.map(p => p.y)), maxY = Math.max(...allPts.map(p => p.y))
+  const spanX = Math.max(1, maxX - minX), spanY = Math.max(1, maxY - minY)
+  const pad = 4
+
+  const norm = (x: number, y: number) => ({
+    x: pad + ((x - minX) / spanX) * (100 - pad * 2),
+    y: pad + ((y - minY) / spanY) * (70 - pad * 2),
+  })
+
   return (
     <svg viewBox="0 0 100 70" className="h-28 w-44 opacity-90">
-      {layout.map((r, i) => (
-        <rect
-          key={i}
-          x={r.x} y={r.y} width={r.w} height={r.h}
-          fill={palette[i % palette.length]} fillOpacity="0.18"
-          stroke={palette[i % palette.length]} strokeOpacity="0.5" strokeWidth="1"
-        />
-      ))}
+      {rooms.map((room, i) => {
+        const pts = room.points.map(p => norm(p.x, p.y))
+        const d = `M ${pts.map(p => `${p.x},${p.y}`).join(" L ")} Z`
+        const color = palette[i % palette.length]
+        return <path key={room.id} d={d} fill={color} fillOpacity="0.18" stroke={color} strokeOpacity="0.5" strokeWidth="1" />
+      })}
     </svg>
   )
 }
-
-const PLANS = [
-  { id: 1, title: "The Glass House", creator: "@studiomodern", price: "₹199", rating: "4.9", reviews: "1.2k", size: "4,200 sqft" },
-  { id: 2, title: "Desert Pavilion", creator: "@arid_arch", price: "₹149", rating: "4.8", reviews: "850", size: "2,800 sqft" },
-  { id: 3, title: "Nordic Minimalist", creator: "@scandi_design", price: "₹89", rating: "4.7", reviews: "2.4k", size: "1,850 sqft" },
-  { id: 4, title: "Urban Loft", creator: "@citybuilds", price: "₹129", rating: "4.9", reviews: "3k+", size: "2,100 sqft" },
-  { id: 5, title: "Coastal Retreat", creator: "@pacific_homes", price: "₹249", rating: "5.0", reviews: "450", size: "3,500 sqft" },
-  { id: 6, title: "Eco Cabin", creator: "@green_living", price: "₹59", rating: "4.6", reviews: "1.1k", size: "950 sqft" },
-]
 
 const TABS = ["House Plans", "Interiors", "Furniture Packs"]
 
 export default function Marketplace() {
   const [tab, setTab] = useState(TABS[0])
+  const [, setLocation] = useLocation()
 
   return (
     <div className="min-h-screen w-full bg-[#FAF8F3] pb-24 text-[#1E2A22]">
@@ -135,12 +127,13 @@ export default function Marketplace() {
           {PLANS.map((plan) => (
             <Card
               key={plan.id}
+              onClick={() => setLocation(`/marketplace/${plan.id}`)}
               className="group cursor-pointer overflow-hidden rounded-2xl border-[#1E2A22]/10 bg-white transition-colors hover:border-[#2F6F4E]/40"
             >
               <div className="relative flex h-56 items-center justify-center overflow-hidden bg-gradient-to-br from-[#DCEFE6] to-[#F4F1EA]">
                 <BlueprintGrid className="opacity-40" />
                 <div className="relative z-10 transition-transform duration-500 group-hover:scale-105">
-                  <PlanGlyph seed={plan.id} />
+                  <PlanGlyph plan={plan} />
                 </div>
                 <div className="absolute right-4 top-4 rounded-full bg-white px-3 py-1 font-mono text-sm font-bold shadow-sm">
                   {plan.price}
