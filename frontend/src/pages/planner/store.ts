@@ -83,7 +83,14 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     return { walls: [...state.walls, wall], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateWall: (id, wall) => set((state) => ({ walls: state.walls.map(w => w.id === id ? { ...w, ...wall } : w) })),
+  updateWall: (id, wall, saveHistory) => set((state) => {
+    if (saveHistory) {
+      const snap = snapshot(state);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
+      return { walls: state.walls.map(w => w.id === id ? { ...w, ...wall } : w), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+    }
+    return { walls: state.walls.map(w => w.id === id ? { ...w, ...wall } : w) };
+  }),
   deleteWall: (id) => set((state) => {
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
@@ -101,10 +108,13 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     return { rooms: [...state.rooms, room], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateRoom: (id, room) => set((state) => {
-    const snap = snapshot(state);
-    const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
-    return { rooms: state.rooms.map(r => r.id === id ? { ...r, ...room } : r), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+  updateRoom: (id, room, saveHistory) => set((state) => {
+    if (saveHistory) {
+      const snap = snapshot(state);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
+      return { rooms: state.rooms.map(r => r.id === id ? { ...r, ...room } : r), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+    }
+    return { rooms: state.rooms.map(r => r.id === id ? { ...r, ...room } : r) };
   }),
   deleteRoom: (id) => set((state) => {
     const snap = snapshot(state);
@@ -121,7 +131,14 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     return { doors: [...state.doors, door], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateDoor: (id, door) => set((state) => ({ doors: state.doors.map(d => d.id === id ? { ...d, ...door } : d) })),
+  updateDoor: (id, door, saveHistory) => set((state) => {
+    if (saveHistory) {
+      const snap = snapshot(state);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
+      return { doors: state.doors.map(d => d.id === id ? { ...d, ...door } : d), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+    }
+    return { doors: state.doors.map(d => d.id === id ? { ...d, ...door } : d) };
+  }),
   deleteDoor: (id) => set((state) => {
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
@@ -137,7 +154,14 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     return { windows: [...state.windows, window], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateWindow: (id, window) => set((state) => ({ windows: state.windows.map(w => w.id === id ? { ...w, ...window } : w) })),
+  updateWindow: (id, window, saveHistory) => set((state) => {
+    if (saveHistory) {
+      const snap = snapshot(state);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
+      return { windows: state.windows.map(w => w.id === id ? { ...w, ...window } : w), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+    }
+    return { windows: state.windows.map(w => w.id === id ? { ...w, ...window } : w) };
+  }),
   deleteWindow: (id) => set((state) => {
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
@@ -153,7 +177,14 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     return { furniture: [...state.furniture, furniture], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateFurniture: (id, furniture) => set((state) => ({ furniture: state.furniture.map(f => f.id === id ? { ...f, ...furniture } : f) })),
+  updateFurniture: (id, furniture, saveHistory) => set((state) => {
+    if (saveHistory) {
+      const snap = snapshot(state);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
+      return { furniture: state.furniture.map(f => f.id === id ? { ...f, ...furniture } : f), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+    }
+    return { furniture: state.furniture.map(f => f.id === id ? { ...f, ...furniture } : f) };
+  }),
   deleteFurniture: (id) => set((state) => {
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);

@@ -98,23 +98,23 @@ export type FloorPlanState = {
   setSelectedRoomShape: (shape: 'square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal') => void
 
   addWall: (wall: Wall) => void
-  updateWall: (id: string, wall: Partial<Wall>) => void
+  updateWall: (id: string, wall: Partial<Wall>, saveHistory?: boolean) => void
   deleteWall: (id: string) => void
 
   addRoom: (room: Room) => void
-  updateRoom: (id: string, room: Partial<Room>) => void
+  updateRoom: (id: string, room: Partial<Room>, saveHistory?: boolean) => void
   deleteRoom: (id: string) => void
 
   addDoor: (door: Door) => void
-  updateDoor: (id: string, door: Partial<Door>) => void
+  updateDoor: (id: string, door: Partial<Door>, saveHistory?: boolean) => void
   deleteDoor: (id: string) => void
 
   addWindow: (window: Window) => void
-  updateWindow: (id: string, window: Partial<Window>) => void
+  updateWindow: (id: string, window: Partial<Window>, saveHistory?: boolean) => void
   deleteWindow: (id: string) => void
 
   addFurniture: (furniture: Furniture) => void
-  updateFurniture: (id: string, furniture: Partial<Furniture>) => void
+  updateFurniture: (id: string, furniture: Partial<Furniture>, saveHistory?: boolean) => void
   deleteFurniture: (id: string) => void
 
   setActiveTool: (tool: Tool) => void

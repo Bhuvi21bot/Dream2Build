@@ -76,19 +76,19 @@ function shade(hex: string, amt: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
-// ─── Floor tile grid overlay ─────────────────────────────────────────────────
-function FloorGrid({ xs, ys, spacing, color }: { xs: number; ys: number; spacing: number; color: string }) {
+function FloorGrid({ xMin, xMax, yMin, yMax, spacing, color }: { xMin: number; xMax: number; yMin: number; yMax: number; spacing: number; color: string }) {
   const points: THREE.Vector3[] = [];
-  const xMin = Math.floor(xs / spacing) * spacing;
-  const xMax = Math.ceil((xs + 1200) / spacing) * spacing;
-  const yMin = Math.floor(ys / spacing) * spacing;
-  const yMax = Math.ceil((ys + 1200) / spacing) * spacing;
+  
+  const startX = Math.floor(xMin / spacing) * spacing;
+  const endX = Math.ceil(xMax / spacing) * spacing;
+  const startY = Math.floor(yMin / spacing) * spacing;
+  const endY = Math.ceil(yMax / spacing) * spacing;
 
-  for (let x = xMin; x <= xMax; x += spacing) {
-    points.push(new THREE.Vector3(x, 0.1, yMin), new THREE.Vector3(x, 0.1, yMax));
+  for (let x = startX; x <= endX; x += spacing) {
+    points.push(new THREE.Vector3(x, 0.1, startY), new THREE.Vector3(x, 0.1, endY));
   }
-  for (let y = yMin; y <= yMax; y += spacing) {
-    points.push(new THREE.Vector3(xMin, 0.1, y), new THREE.Vector3(xMax, 0.1, y));
+  for (let y = startY; y <= endY; y += spacing) {
+    points.push(new THREE.Vector3(startX, 0.1, y), new THREE.Vector3(endX, 0.1, y));
   }
 
   const geo = new THREE.BufferGeometry().setFromPoints(points);
@@ -405,9 +405,14 @@ function SceneContent() {
         shape.moveTo(room.points[0].x, room.points[0].y);
         for (let i = 1; i < room.points.length; i++) shape.lineTo(room.points[i].x, room.points[i].y);
 
-        const extrudeSettings = { depth: 8, bevelEnabled: false };
         const xs = Math.min(...room.points.map(p => p.x));
         const ys = Math.min(...room.points.map(p => p.y));
+        const xm = Math.max(...room.points.map(p => p.x));
+        const ym = Math.max(...room.points.map(p => p.y));
+        const cx = (xs + xm) / 2;
+        const cy = (ys + ym) / 2;
+        // make grid larger to cover corners during rotation
+        const span = Math.max(xm - xs, ym - ys) * 1.5;
 
         return (
           <group key={room.id}>
@@ -418,7 +423,13 @@ function SceneContent() {
               </mesh>
             </group>
             {matDef.gridColor && matDef.gridSpacing && (
-              <FloorGrid xs={xs} ys={ys} spacing={matDef.gridSpacing} color={matDef.gridColor} />
+              <group position={[cx, 0, cy]} rotation={[0, -(room.textureRotation || 0) * Math.PI / 180, 0]}>
+                <FloorGrid 
+                  xMin={-span} xMax={span} yMin={-span} yMax={span} 
+                  spacing={matDef.gridSpacing * (room.textureScale || 1)} 
+                  color={matDef.gridColor} 
+                />
+              </group>
             )}
           </group>
         );
