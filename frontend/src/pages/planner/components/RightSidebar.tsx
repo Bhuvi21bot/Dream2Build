@@ -239,6 +239,30 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
           </SelectContent>
         </Select>
       </div>
+
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-foreground/70">Texture Scale</Label>
+          <span className="text-xs font-mono text-amber-500">{(room.textureScale ?? 1).toFixed(1)}x</span>
+        </div>
+        <Slider 
+          value={[room.textureScale ?? 1]} 
+          min={0.1} max={5} step={0.1}
+          onValueChange={([v]) => updateRoom(room.id, { textureScale: v })}
+        />
+      </div>
+
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-foreground/70">Texture Rotation</Label>
+          <span className="text-xs font-mono text-amber-500">{room.textureRotation ?? 0}°</span>
+        </div>
+        <Slider 
+          value={[room.textureRotation ?? 0]} 
+          min={0} max={360} step={15}
+          onValueChange={([v]) => updateRoom(room.id, { textureRotation: v })}
+        />
+      </div>
     </div>
   );
 }

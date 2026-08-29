@@ -22,6 +22,8 @@ export type Room = {
   points: Point[]
   floorMaterial: FloorMaterial
   color: string
+  textureScale?: number
+  textureRotation?: number
 }
 
 export type Door = {
