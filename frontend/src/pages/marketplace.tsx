@@ -3,7 +3,7 @@ import { useLocation } from "wouter"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, SlidersHorizontal, Star } from "lucide-react"
-import { PLANS, type MarketPlan } from "./marketplace-data"
+import { PLANS, type MarketPlan } from "./marketplacedata"
 
 /**
  * Marketplace — "Blueprint & Paper" design system.

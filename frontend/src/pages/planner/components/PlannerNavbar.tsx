@@ -160,7 +160,7 @@ export function PlannerNavbar() {
               <Box className="w-4 h-4 text-amber-500" />
             </div>
             <span className="font-display font-bold text-lg tracking-wide text-amber-500">
-              Planner
+              KHUSHEE
             </span>
           </div>
         </div>
