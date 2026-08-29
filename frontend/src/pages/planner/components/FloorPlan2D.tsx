@@ -1026,6 +1026,13 @@ export function FloorPlan2D() {
       }
     }
 
+    if (drag && (
+      drag.kind.startsWith('move-') || 
+      drag.kind.startsWith('resize-')
+    )) {
+      storeRef.current.pushHistory();
+    }
+
     dragRef.current = null;
   }, [toWorld]);
 
