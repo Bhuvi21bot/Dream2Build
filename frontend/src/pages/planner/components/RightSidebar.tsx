@@ -158,7 +158,7 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
     <div className="flex flex-col gap-4">
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Material</Label>
-        <Select value={wall.material} onValueChange={(v) => updateWall(wall.id, { material: v })}>
+        <Select value={wall.material} onValueChange={(v) => updateWall(wall.id, { material: v }, true)}>
           <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
@@ -180,6 +180,7 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
           value={[wall.thickness]} 
           min={5} max={50} step={1}
           onValueChange={([v]) => updateWall(wall.id, { thickness: v })}
+          onValueCommit={([v]) => updateWall(wall.id, { thickness: v }, true)}
         />
       </div>
 
@@ -192,6 +193,7 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
           value={[wall.height]} 
           min={100} max={400} step={10}
           onValueChange={([v]) => updateWall(wall.id, { height: v })}
+          onValueCommit={([v]) => updateWall(wall.id, { height: v }, true)}
         />
       </div>
     </div>
@@ -206,13 +208,14 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
         <Input 
           value={room.name} 
           onChange={(e) => updateRoom(room.id, { name: e.target.value })}
+          onBlur={(e) => updateRoom(room.id, { name: e.target.value }, true)}
           className="bg-background border-border"
         />
       </div>
 
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Type</Label>
-        <Select value={room.type} onValueChange={(v) => updateRoom(room.id, { type: v })}>
+        <Select value={room.type} onValueChange={(v) => updateRoom(room.id, { type: v }, true)}>
           <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
@@ -226,7 +229,7 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
 
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Floor Material</Label>
-        <Select value={room.floorMaterial} onValueChange={(v) => updateRoom(room.id, { floorMaterial: v })}>
+        <Select value={room.floorMaterial} onValueChange={(v) => updateRoom(room.id, { floorMaterial: v }, true)}>
           <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
@@ -249,6 +252,7 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
           value={[room.textureScale ?? 1]} 
           min={0.1} max={5} step={0.1}
           onValueChange={([v]) => updateRoom(room.id, { textureScale: v })}
+          onValueCommit={([v]) => updateRoom(room.id, { textureScale: v }, true)}
         />
       </div>
 
@@ -261,6 +265,7 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
           value={[room.textureRotation ?? 0]} 
           min={0} max={360} step={15}
           onValueChange={([v]) => updateRoom(room.id, { textureRotation: v })}
+          onValueCommit={([v]) => updateRoom(room.id, { textureRotation: v }, true)}
         />
       </div>
     </div>
@@ -279,6 +284,7 @@ function DoorProperties({ door, updateDoor }: { door: Door, updateDoor: any }) {
           value={[door.width]} 
           min={60} max={200} step={5}
           onValueChange={([v]) => updateDoor(door.id, { width: v })}
+          onValueCommit={([v]) => updateDoor(door.id, { width: v }, true)}
         />
       </div>
 
@@ -286,13 +292,13 @@ function DoorProperties({ door, updateDoor }: { door: Door, updateDoor: any }) {
         <Label className="text-xs text-foreground/70">Swing Direction</Label>
         <div className="flex gap-2">
           <button 
-            onClick={() => updateDoor(door.id, { swingDirection: 'left' })}
+            onClick={() => updateDoor(door.id, { swingDirection: 'left' }, true)}
             className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'left' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
           >
             Left
           </button>
           <button 
-            onClick={() => updateDoor(door.id, { swingDirection: 'right' })}
+            onClick={() => updateDoor(door.id, { swingDirection: 'right' }, true)}
             className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'right' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
           >
             Right
@@ -311,21 +317,21 @@ function WindowProperties({ window, updateWindow }: { window: Window, updateWind
           <Label className="text-xs text-foreground/70">Width</Label>
           <span className="text-xs font-mono text-amber-500">{window.width} cm</span>
         </div>
-        <Slider value={[window.width]} min={40} max={300} step={10} onValueChange={([v]) => updateWindow(window.id, { width: v })} />
+        <Slider value={[window.width]} min={40} max={300} step={10} onValueChange={([v]) => updateWindow(window.id, { width: v })} onValueCommit={([v]) => updateWindow(window.id, { width: v }, true)} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Height</Label>
           <span className="text-xs font-mono text-amber-500">{window.height} cm</span>
         </div>
-        <Slider value={[window.height]} min={40} max={250} step={10} onValueChange={([v]) => updateWindow(window.id, { height: v })} />
+        <Slider value={[window.height]} min={40} max={250} step={10} onValueChange={([v]) => updateWindow(window.id, { height: v })} onValueCommit={([v]) => updateWindow(window.id, { height: v }, true)} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Sill Height</Label>
           <span className="text-xs font-mono text-amber-500">{window.sillHeight} cm</span>
         </div>
-        <Slider value={[window.sillHeight]} min={0} max={150} step={5} onValueChange={([v]) => updateWindow(window.id, { sillHeight: v })} />
+        <Slider value={[window.sillHeight]} min={0} max={150} step={5} onValueChange={([v]) => updateWindow(window.id, { sillHeight: v })} onValueCommit={([v]) => updateWindow(window.id, { sillHeight: v }, true)} />
       </div>
     </div>
   );
@@ -339,21 +345,21 @@ function FurnitureProperties({ item, updateFurniture }: { item: Furniture, updat
           <Label className="text-xs text-foreground/70">Rotation</Label>
           <span className="text-xs font-mono text-amber-500">{item.rotation}°</span>
         </div>
-        <Slider value={[item.rotation]} min={0} max={360} step={15} onValueChange={([v]) => updateFurniture(item.id, { rotation: v })} />
+        <Slider value={[item.rotation]} min={0} max={360} step={15} onValueChange={([v]) => updateFurniture(item.id, { rotation: v })} onValueCommit={([v]) => updateFurniture(item.id, { rotation: v }, true)} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Width</Label>
           <span className="text-xs font-mono text-amber-500">{item.width} cm</span>
         </div>
-        <Slider value={[item.width]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { width: v })} />
+        <Slider value={[item.width]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { width: v })} onValueCommit={([v]) => updateFurniture(item.id, { width: v }, true)} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Depth</Label>
           <span className="text-xs font-mono text-amber-500">{item.depth} cm</span>
         </div>
-        <Slider value={[item.depth]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { depth: v })} />
+        <Slider value={[item.depth]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { depth: v })} onValueCommit={([v]) => updateFurniture(item.id, { depth: v }, true)} />
       </div>
     </div>
   );
