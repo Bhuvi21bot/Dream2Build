@@ -4,7 +4,7 @@ export type RoomType = 'bedroom' | 'kitchen' | 'living' | 'bathroom' | 'balcony'
 export type WallMaterial = 'white-paint' | 'concrete' | 'brick' | 'wood-panel'
 export type FloorMaterial = 'hardwood' | 'tiles' | 'marble' | 'carpet' | 'concrete'
 export type DoorMaterial = 'wood' | 'glass' | 'metal'
-export type FurnitureType = 'sofa' | 'bed' | 'dining-table' | 'chair' | 'desk' | 'wardrobe' | 'kitchen-counter' | 'toilet' | 'bathtub' | 'stairs'
+export type FurnitureType = 'sofa' | 'bed' | 'dining-table' | 'chair' | 'desk' | 'wardrobe' | 'kitchen-counter' | 'toilet' | 'bathtub' | 'stairs' | 'armchair' | 'loveseat' | 'bench' | 'ottoman' | 'nightstand' | 'bookshelf' | 'tv-console' | 'cabinet' | 'plant' | 'lamp' | 'mirror' | 'outdoor-tree' | 'fence';
 
 export type Wall = {
   id: string
