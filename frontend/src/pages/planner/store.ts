@@ -25,11 +25,13 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   selectedId: null,
   activeTool: 'select',
   selectedFurnitureType: 'sofa',
+  selectedFurnitureStyle: 'modern',
   selectedRoomType: 'living',
   selectedRoomShape: 'square',
   gridSize: 20,
   snapToGrid: true,
   showGrid: true,
+  showCeilingLights: true,
   scale: 1,
   view: '2d',
   cameraMode: 'orbit',
@@ -75,6 +77,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   }),
 
   setSelectedFurnitureType: (type) => set({ selectedFurnitureType: type }),
+  setSelectedFurnitureStyle: (style) => set({ selectedFurnitureStyle: style }),
   setSelectedRoomType: (type) => set({ selectedRoomType: type }),
   setSelectedRoomShape: (shape) => set({ selectedRoomShape: shape }),
 
@@ -201,6 +204,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   setCameraMode: (mode) => set({ cameraMode: mode }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleSnap: () => set((state) => ({ snapToGrid: !state.snapToGrid })),
+  toggleCeilingLights: () => set((state) => ({ showCeilingLights: !state.showCeilingLights })),
   setScale: (scale) => set({ scale }),
 
   // Polygon room drawing
@@ -234,7 +238,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   }),
   cancelPolygon: () => set({ polygonPoints: [], activeTool: 'select' }),
 
-  clearAll: () => set({ walls: [], rooms: [], doors: [], windows: [], furniture: [], selectedId: null, polygonPoints: [] }),
+  clearAll: () => set({ walls: [], rooms: [], doors: [], windows: [], furniture: [], selectedId: null, polygonPoints: [], history: [], historyIndex: -1, canUndo: false, canRedo: false }),
 
   loadSamplePlan: (templateId?: string) => {
     const originX = 100;
@@ -259,10 +263,10 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
         { id: 'w7', start: { x: originX + 500, y: originY + 400 }, end: { x: originX + 1000, y: originY + 400 }, thickness: 15, height: 300, material: 'white-paint' },
       ];
       rooms = [
-        { id: 'r1', name: 'Villa Living Room', type: 'living', floorMaterial: 'hardwood', color: 'rgba(210,180,140,0.4)', points: [{x: originX, y: originY}, {x: originX+500, y: originY}, {x: originX+500, y: originY+400}, {x: originX, y: originY+400}] },
-        { id: 'r2', name: 'Courtyard Kitchen', type: 'kitchen', floorMaterial: 'tiles', color: 'rgba(180,210,210,0.4)', points: [{x: originX, y: originY+400}, {x: originX+500, y: originY+400}, {x: originX+500, y: originY+800}, {x: originX, y: originY+800}] },
-        { id: 'r3', name: 'Oasis Master Bed', type: 'bedroom', floorMaterial: 'carpet', color: 'rgba(210,180,210,0.4)', points: [{x: originX+500, y: originY}, {x: originX+1000, y: originY}, {x: originX+1000, y: originY+400}, {x: originX+500, y: originY+400}] },
-        { id: 'r4', name: 'Oasis Guest Bed', type: 'bedroom', floorMaterial: 'marble', color: 'rgba(210,210,180,0.4)', points: [{x: originX+500, y: originY+400}, {x: originX+1000, y: originY+400}, {x: originX+1000, y: originY+800}, {x: originX+500, y: originY+800}] },
+        { id: 'r1', name: 'Villa Living Room', type: 'living', floorMaterial: 'hardwood', color: 'rgba(210,180,140,0.4)', points: [{ x: originX, y: originY }, { x: originX + 500, y: originY }, { x: originX + 500, y: originY + 400 }, { x: originX, y: originY + 400 }] },
+        { id: 'r2', name: 'Courtyard Kitchen', type: 'kitchen', floorMaterial: 'tiles', color: 'rgba(180,210,210,0.4)', points: [{ x: originX, y: originY + 400 }, { x: originX + 500, y: originY + 400 }, { x: originX + 500, y: originY + 800 }, { x: originX, y: originY + 800 }] },
+        { id: 'r3', name: 'Oasis Master Bed', type: 'bedroom', floorMaterial: 'carpet', color: 'rgba(210,180,210,0.4)', points: [{ x: originX + 500, y: originY }, { x: originX + 1000, y: originY }, { x: originX + 1000, y: originY + 400 }, { x: originX + 500, y: originY + 400 }] },
+        { id: 'r4', name: 'Oasis Guest Bed', type: 'bedroom', floorMaterial: 'marble', color: 'rgba(210,210,180,0.4)', points: [{ x: originX + 500, y: originY + 400 }, { x: originX + 1000, y: originY + 400 }, { x: originX + 1000, y: originY + 800 }, { x: originX + 500, y: originY + 800 }] },
       ];
       doors = [
         { id: 'd1', wallId: 'w5', position: 0.2, width: 90, swingDirection: 'left', material: 'wood' },
@@ -291,8 +295,8 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
         { id: 'w5', start: { x: originX + 450, y: originY }, end: { x: originX + 450, y: originY + 700 }, thickness: 15, height: 260, material: 'white-paint' }
       ];
       rooms = [
-        { id: 'r1', name: 'Pine Living & Dining', type: 'living', floorMaterial: 'hardwood', color: 'rgba(230,190,120,0.4)', points: [{x: originX, y: originY}, {x: originX+450, y: originY}, {x: originX+450, y: originY+700}, {x: originX, y: originY+700}] },
-        { id: 'r2', name: 'Ridge Bedroom', type: 'bedroom', floorMaterial: 'carpet', color: 'rgba(180,210,180,0.4)', points: [{x: originX+450, y: originY}, {x: originX+900, y: originY}, {x: originX+900, y: originY+700}, {x: originX+450, y: originY+700}] }
+        { id: 'r1', name: 'Pine Living & Dining', type: 'living', floorMaterial: 'hardwood', color: 'rgba(230,190,120,0.4)', points: [{ x: originX, y: originY }, { x: originX + 450, y: originY }, { x: originX + 450, y: originY + 700 }, { x: originX, y: originY + 700 }] },
+        { id: 'r2', name: 'Ridge Bedroom', type: 'bedroom', floorMaterial: 'carpet', color: 'rgba(180,210,180,0.4)', points: [{ x: originX + 450, y: originY }, { x: originX + 900, y: originY }, { x: originX + 900, y: originY + 700 }, { x: originX + 450, y: originY + 700 }] }
       ];
       doors = [
         { id: 'd1', wallId: 'w5', position: 0.5, width: 85, swingDirection: 'left', material: 'wood' },
@@ -314,7 +318,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
         { id: 'w4', start: { x: originX, y: originY + 400 }, end: { x: originX, y: originY }, thickness: 15, height: 250, material: 'brick' }
       ];
       rooms = [
-        { id: 'r1', name: 'Studio ADU Space', type: 'living', floorMaterial: 'hardwood', color: 'rgba(240,220,200,0.4)', points: [{x: originX, y: originY}, {x: originX+600, y: originY}, {x: originX+600, y: originY+400}, {x: originX, y: originY+400}] }
+        { id: 'r1', name: 'Studio ADU Space', type: 'living', floorMaterial: 'hardwood', color: 'rgba(240,220,200,0.4)', points: [{ x: originX, y: originY }, { x: originX + 600, y: originY }, { x: originX + 600, y: originY + 400 }, { x: originX, y: originY + 400 }] }
       ];
       doors = [{ id: 'd1', wallId: 'w4', position: 0.8, width: 90, swingDirection: 'right', material: 'wood' }];
       windows = [{ id: 'win1', wallId: 'w1', position: 0.5, width: 220, height: 160, sillHeight: 70 }];
@@ -331,8 +335,8 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
         { id: 'w5', start: { x: originX, y: originY + 400 }, end: { x: originX + 800, y: originY + 400 }, thickness: 15, height: 280, material: 'white-paint' }
       ];
       rooms = [
-        { id: 'r1', name: 'Vertical Townhouse Studio', type: 'living', floorMaterial: 'tiles', color: 'rgba(200,200,220,0.4)', points: [{x: originX, y: originY}, {x: originX+800, y: originY}, {x: originX+800, y: originY+400}, {x: originX, y: originY+400}] },
-        { id: 'r2', name: 'Townhouse Bedroom', type: 'bedroom', floorMaterial: 'hardwood', color: 'rgba(220,200,200,0.4)', points: [{x: originX, y: originY+400}, {x: originX+800, y: originY+400}, {x: originX+800, y: originY+800}, {x: originX, y: originY+800}] }
+        { id: 'r1', name: 'Vertical Townhouse Studio', type: 'living', floorMaterial: 'tiles', color: 'rgba(200,200,220,0.4)', points: [{ x: originX, y: originY }, { x: originX + 800, y: originY }, { x: originX + 800, y: originY + 400 }, { x: originX, y: originY + 400 }] },
+        { id: 'r2', name: 'Townhouse Bedroom', type: 'bedroom', floorMaterial: 'hardwood', color: 'rgba(220,200,200,0.4)', points: [{ x: originX, y: originY + 400 }, { x: originX + 800, y: originY + 400 }, { x: originX + 800, y: originY + 800 }, { x: originX, y: originY + 800 }] }
       ];
       doors = [
         { id: 'd1', wallId: 'w5', position: 0.5, width: 90, swingDirection: 'left', material: 'wood' },
@@ -348,6 +352,6 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
       ];
     }
 
-    set({ walls, rooms, doors, windows, furniture, scale: 1, polygonPoints: [] });
+    set({ walls, rooms, doors, windows, furniture, scale: 1, polygonPoints: [], history: [], historyIndex: -1, canUndo: false, canRedo: false });
   }
 }));
