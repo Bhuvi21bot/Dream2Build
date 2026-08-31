@@ -254,7 +254,7 @@ function Wall3D({ wall, doors, windows }: { wall: Wall; doors: Door[]; windows: 
   const wallTex = wall.paintColor ? null : wallTextureFor(matDef);
   const matArgs = wall.paintColor
     ? { color: wall.paintColor, roughness: 0.75, metalness: 0 }
-    : { color: matDef.color, roughness: matDef.roughness, metalness: matDef.metalness };
+    : { color: matDef.color, roughness: matDef.roughness, metalness: matDef.metalness ?? 0 };
 
   const wallDoors = doors.filter(d => d.wallId === wall.id);
   const wallWindows = windows.filter(w => w.wallId === wall.id);
@@ -775,7 +775,7 @@ function RoomFloor({ room }: { room: Room }) {
 
   return (
     <group>
-      <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]}>
+      <group rotation={[Math.PI / 2, 0, 0]} position={[0, -8, 0]}>
         <mesh receiveShadow castShadow>
           <extrudeGeometry args={[shape, extrudeSettings]} />
           <meshStandardMaterial map={tex} roughness={matDef.roughness} metalness={matDef.metalness} />
