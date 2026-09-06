@@ -31,10 +31,8 @@ const HANDLE_R = 7;           // handle hit radius in world px
 const SNAP_DIST = 40;          // wall-snap radius for door/window
 const WALL_JOIN_DIST = 28;        // radius (world px) within which a new/dragged wall endpoint snaps to an existing wall's endpoint, joining the two walls
 
-// Room shape ('square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal') is owned by the
-// store as `selectedRoomShape` / `setSelectedRoomShape` — picked via LeftSidebar's shape
-// buttons. getPointsForShape() below already treats anything it doesn't recognize (including
-// 'square') as a plain rectangle, so no local shape state is needed here.
+const ROOM_SHAPES = ['rect', 'l-shape', 'u-shape', 't-shape', 'octagonal'] as const;
+type RoomShape = typeof ROOM_SHAPES[number];
 
 const ROOM_COLORS: Record<RoomType, { fill: string; stroke: string }> = {
   living: { fill: 'rgba(218,178,120,0.4)', stroke: '#d4a96a' },
@@ -47,87 +45,39 @@ const ROOM_COLORS: Record<RoomType, { fill: string; stroke: string }> = {
 };
 
 const FURNITURE_CFG: Record<FurnitureType, { w: number; d: number; fill: string; label: string }> = {
+  // seating
   sofa: { w: 200, d: 90, fill: '#8b6565', label: 'Sofa' },
-  bed: { w: 160, d: 200, fill: '#5b6b9e', label: 'Bed' },
-  'dining-table': { w: 140, d: 90, fill: '#9e7a4e', label: 'Dining Table' },
+  armchair: { w: 85, d: 85, fill: '#8b6565', label: 'Armchair' },
+  loveseat: { w: 150, d: 90, fill: '#8b6565', label: 'Loveseat' },
+  bench: { w: 120, d: 40, fill: '#9e8a6b', label: 'Bench' },
+  ottoman: { w: 60, d: 60, fill: '#a67c6b', label: 'Ottoman' },
   chair: { w: 55, d: 55, fill: '#7a9e6b', label: 'Chair' },
+  // sleeping
+  bed: { w: 160, d: 200, fill: '#5b6b9e', label: 'Bed' },
+  nightstand: { w: 45, d: 40, fill: '#9e7a4e', label: 'Nightstand' },
+  // tables
+  'dining-table': { w: 140, d: 90, fill: '#9e7a4e', label: 'Dining Table' },
   desk: { w: 120, d: 70, fill: '#4a9e9e', label: 'Desk' },
+  // storage
   wardrobe: { w: 150, d: 65, fill: '#9e5b8b', label: 'Wardrobe' },
+  bookshelf: { w: 100, d: 35, fill: '#8a6b4e', label: 'Bookshelf' },
+  'tv-console': { w: 160, d: 45, fill: '#5a5a5a', label: 'TV Console' },
+  cabinet: { w: 90, d: 45, fill: '#7a6b5a', label: 'Cabinet' },
+  // kitchen
   'kitchen-counter': { w: 220, d: 60, fill: '#8e8e8e', label: 'Counter' },
+  // bathroom
   toilet: { w: 50, d: 70, fill: '#cce8ff', label: 'Toilet' },
   bathtub: { w: 160, d: 75, fill: '#b8d8f0', label: 'Bathtub' },
+  // decor
+  plant: { w: 45, d: 45, fill: '#4a7a4a', label: 'Plant' },
+  lamp: { w: 30, d: 30, fill: '#d4af6a', label: 'Lamp' },
+  mirror: { w: 60, d: 10, fill: '#a8c8d8', label: 'Mirror' },
+  // outdoor
+  'outdoor-tree': { w: 90, d: 90, fill: '#3e6b3e', label: 'Tree' },
+  fence: { w: 150, d: 10, fill: '#8a7a5a', label: 'Fence' },
+  // structural
   stairs: { w: 100, d: 250, fill: '#b8995a', label: 'Stairs' },
 };
-
-const FLOOR_MATERIALS_2D: Record<string, CanvasPattern | string> = {};
-
-function getFloorStyle(material: string): CanvasPattern | string {
-  if (FLOOR_MATERIALS_2D[material]) return FLOOR_MATERIALS_2D[material];
-  
-  const canvas = document.createElement('canvas');
-  canvas.width = 40;
-  canvas.height = 40;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return '#ccc';
-  
-  if (material === 'hardwood') {
-    ctx.fillStyle = 'rgba(180, 130, 90, 0.4)';
-    ctx.fillRect(0, 0, 40, 40);
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 10); ctx.lineTo(40, 10);
-    ctx.moveTo(0, 20); ctx.lineTo(40, 20);
-    ctx.moveTo(0, 30); ctx.lineTo(40, 30);
-    ctx.moveTo(10, 0); ctx.lineTo(10, 10);
-    ctx.moveTo(30, 10); ctx.lineTo(30, 20);
-    ctx.moveTo(15, 20); ctx.lineTo(15, 30);
-    ctx.moveTo(25, 30); ctx.lineTo(25, 40);
-    ctx.stroke();
-  } else if (material === 'tiles') {
-    ctx.fillStyle = 'rgba(210, 210, 210, 0.4)';
-    ctx.fillRect(0, 0, 40, 40);
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 20); ctx.lineTo(40, 20);
-    ctx.moveTo(20, 0); ctx.lineTo(20, 40);
-    ctx.stroke();
-  } else if (material === 'marble') {
-    ctx.fillStyle = 'rgba(240, 240, 240, 0.5)';
-    ctx.fillRect(0, 0, 40, 40);
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(0, 40); ctx.quadraticCurveTo(20, 20, 40, 0);
-    ctx.stroke();
-  } else if (material === 'carpet') {
-    ctx.fillStyle = 'rgba(190, 180, 170, 0.4)';
-    ctx.fillRect(0, 0, 40, 40);
-    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-    for (let i = 0; i < 50; i++) {
-      ctx.beginPath();
-      ctx.arc(Math.random() * 40, Math.random() * 40, Math.random() * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  } else if (material === 'concrete') {
-    ctx.fillStyle = 'rgba(160, 160, 160, 0.4)';
-    ctx.fillRect(0, 0, 40, 40);
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    for (let i = 0; i < 30; i++) {
-      ctx.beginPath();
-      ctx.arc(Math.random() * 40, Math.random() * 40, Math.random() * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  } else {
-    ctx.fillStyle = 'rgba(200, 200, 200, 0.4)';
-    ctx.fillRect(0, 0, 40, 40);
-  }
-  
-  const pattern = ctx.createPattern(canvas, 'repeat') || '#ccc';
-  FLOOR_MATERIALS_2D[material] = pattern;
-  return pattern;
-}
 
 // ─── drag descriptor ──────────────────────────────────────────────────────────
 type DragKind =
@@ -266,6 +216,11 @@ export function FloorPlan2D() {
   const storeRef = useRef(store);
   storeRef.current = store;
 
+  // ── room shape (for the 'room' drag-draw tool) ────────────────────────────
+  const [roomShape, setRoomShape] = useState<RoomShape>('rect');
+  const roomShapeRef = useRef(roomShape);
+  roomShapeRef.current = roomShape;
+
   // ── export / import ────────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -369,7 +324,7 @@ export function FloorPlan2D() {
     const { x: vx, y: vy, scale: vs } = viewRef.current;
     const W = canvas.width, H = canvas.height;
     const { walls, rooms, doors, windows, furniture, selectedId, activeTool,
-      showGrid, selectedFurnitureType, polygonPoints, selectedRoomShape } = storeRef.current;
+      showGrid, selectedFurnitureType, polygonPoints } = storeRef.current;
     const mouse = mouseRef.current;
 
     // ── main canvas ──────────────────────────────────────────────────────────
@@ -401,20 +356,8 @@ export function FloorPlan2D() {
       ctx.moveTo(room.points[0].x, room.points[0].y);
       room.points.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
       ctx.closePath();
-      
-      // Store transform to reset after filling so pattern aligns to world space not room local
-      const currentTransform = ctx.getTransform();
-      ctx.resetTransform();
-      // calculate absolute scale/translation for pattern
-      ctx.translate(vx, vy);
-      ctx.scale(vs, vs);
-      
-      ctx.fillStyle = getFloorStyle(room.floorMaterial || 'hardwood');
+      ctx.fillStyle = clr.fill;
       ctx.fill();
-      
-      // Restore transform
-      ctx.setTransform(currentTransform);
-      
       ctx.strokeStyle = isSel ? '#f59e0b' : clr.stroke;
       ctx.lineWidth = isSel ? 3 / vs : 1.5 / vs;
       ctx.stroke();
@@ -567,8 +510,8 @@ export function FloorPlan2D() {
 
     if (drag && drag.kind === 'draw-room' && activeTool === 'room') {
       const { start } = drag;
-      const shape = selectedRoomShape;
-      if (shape === 'square') {
+      const shape = roomShapeRef.current;
+      if (shape === 'rect') {
         const rx = Math.min(start.x, sm.x), ry = Math.min(start.y, sm.y);
         const rw = Math.abs(sm.x - start.x), rh = Math.abs(sm.y - start.y);
         octx.fillStyle = 'rgba(245,158,11,0.12)';
@@ -834,7 +777,8 @@ export function FloorPlan2D() {
       const cfg = FURNITURE_CFG[selectedFurnitureType];
       addFurniture({
         id: 'f_' + Math.random().toString(36).slice(2), type: selectedFurnitureType,
-        position: sp, rotation: 0, width: cfg.w, depth: cfg.d, color: cfg.fill
+        position: sp, rotation: 0, width: cfg.w, depth: cfg.d, color: cfg.fill,
+        style: storeRef.current.selectedFurnitureStyle,
       });
       setSelectedId(null);
       return;
@@ -1015,7 +959,7 @@ export function FloorPlan2D() {
       const rw = Math.abs(sp.x - drag.start.x), rh = Math.abs(sp.y - drag.start.y);
       if (rw > 20 && rh > 20) {
         const clr = ROOM_COLORS[selectedRoomType] ?? ROOM_COLORS.living;
-        const points = getPointsForShape(storeRef.current.selectedRoomShape, drag.start, sp);
+        const points = getPointsForShape(roomShapeRef.current, drag.start, sp);
         addRoom({
           id: 'r_' + Math.random().toString(36).slice(2),
           name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
@@ -1024,13 +968,6 @@ export function FloorPlan2D() {
           floorMaterial: 'hardwood', color: clr.fill
         });
       }
-    }
-
-    if (drag && (
-      drag.kind.startsWith('move-') || 
-      drag.kind.startsWith('resize-')
-    )) {
-      storeRef.current.pushHistory();
     }
 
     dragRef.current = null;
@@ -1138,6 +1075,24 @@ export function FloorPlan2D() {
         </div>
       )}
 
+      {/* room shape picker */}
+      {store.activeTool === 'room' && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex gap-1.5">
+          {ROOM_SHAPES.map(shape => (
+            <button
+              key={shape}
+              onClick={() => setRoomShape(shape)}
+              className={`px-2.5 py-1 rounded-full text-[10px] font-mono border transition-colors ${roomShape === shape
+                ? 'bg-amber-500 text-black border-amber-500'
+                : 'bg-black/75 text-amber-400 border-amber-500/40 hover:bg-black/90'
+                }`}
+            >
+              {shape === 'rect' ? 'Rect' : shape.replace('-shape', '').toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* tool hints */}
       {store.activeTool === 'wall' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 bg-black/75 border border-amber-500/40 rounded-full text-[11px] text-amber-400 font-mono flex items-center gap-2 pointer-events-none backdrop-blur-sm">
@@ -1148,7 +1103,7 @@ export function FloorPlan2D() {
       {store.activeTool === 'room' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 bg-black/75 border border-amber-500/40 rounded-full text-[11px] text-amber-400 font-mono flex items-center gap-2 pointer-events-none backdrop-blur-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-          Pick a shape in the sidebar, then click & drag to draw · Vertex ● handles to reshape
+          Click & drag to draw room · Drag to move · Vertex ● handles to reshape
         </div>
       )}
       {store.activeTool === 'polygon-room' && (

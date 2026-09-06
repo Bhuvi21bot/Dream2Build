@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { Camera, RotateCcw, User, Map, Eye } from 'lucide-react';
 
 export function RightSidebar() {
-  const { 
+  const {
     selectedId, walls, rooms, doors, windows, furniture,
     updateWall, updateRoom, updateDoor, updateWindow, updateFurniture,
     view, cameraMode, setCameraMode
@@ -20,13 +20,13 @@ export function RightSidebar() {
     if (!selectedId) return null;
     let type = 'none';
     let element: any = null;
-    
+
     if (walls.some(w => w.id === selectedId)) { type = 'wall'; element = walls.find(w => w.id === selectedId); }
     else if (rooms.some(r => r.id === selectedId)) { type = 'room'; element = rooms.find(r => r.id === selectedId); }
     else if (doors.some(d => d.id === selectedId)) { type = 'door'; element = doors.find(d => d.id === selectedId); }
     else if (windows.some(w => w.id === selectedId)) { type = 'window'; element = windows.find(w => w.id === selectedId); }
     else if (furniture.some(f => f.id === selectedId)) { type = 'furniture'; element = furniture.find(f => f.id === selectedId); }
-    
+
     return { type, element };
   };
 
@@ -43,7 +43,7 @@ export function RightSidebar() {
   }, 0);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ x: 300 }}
       animate={{ x: 0 }}
       className="w-72 border-l border-border bg-card/95 flex flex-col z-30"
@@ -94,7 +94,7 @@ export function RightSidebar() {
           {/* Global Project Stats */}
           <div className="flex flex-col gap-4">
             <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-wider">Project Summary</h3>
-            
+
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-background border border-border rounded-lg p-3">
                 <div className="text-xl font-mono text-foreground mb-1">{totalArea.toFixed(1)} <span className="text-xs text-foreground/50">m²</span></div>
@@ -114,7 +114,7 @@ export function RightSidebar() {
                 <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-wider flex items-center gap-2">
                   <Camera className="w-3 h-3" /> Camera
                 </h3>
-                
+
                 <div className="grid grid-cols-2 gap-2">
                   <CameraModeBtn mode="orbit" current={cameraMode} set={setCameraMode} icon={RotateCcw} label="Orbit" />
                   <CameraModeBtn mode="firstperson" current={cameraMode} set={setCameraMode} icon={User} label="First Person" />
@@ -133,7 +133,7 @@ export function RightSidebar() {
 
 // Subcomponents for properties
 function MousePointer2Icon(props: any) {
-  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/><path d="m13 13 6 6"/></svg>;
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m4 4 7.07 17 2.51-7.39L21 11.07z" /><path d="m13 13 6 6" /></svg>;
 }
 
 function CameraModeBtn({ mode, current, set, icon: Icon, label }: any) {
@@ -141,11 +141,10 @@ function CameraModeBtn({ mode, current, set, icon: Icon, label }: any) {
   return (
     <button
       onClick={() => set(mode)}
-      className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${
-        active 
-          ? "bg-amber-500/10 border-amber-500/50 text-amber-500" 
+      className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${active
+          ? "bg-amber-500/10 border-amber-500/50 text-amber-500"
           : "bg-background border-border text-foreground/60 hover:bg-muted"
-      }`}
+        }`}
     >
       <Icon className="w-4 h-4" />
       <span className="text-[10px] uppercase tracking-wider">{label}</span>
@@ -158,10 +157,8 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
     <div className="flex flex-col gap-4">
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Material</Label>
-        <Select value={wall.material} onValueChange={(v) => updateWall(wall.id, { material: v }, true)}>
-          <SelectTrigger className="bg-background border-border">
-            <SelectValue />
-          </SelectTrigger>
+        <Select value={wall.material} onValueChange={(v) => updateWall(wall.id, { material: v })}>
+          <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
           <SelectContent className="bg-card border-border">
             <SelectItem value="white-paint">White Paint</SelectItem>
             <SelectItem value="concrete">Exposed Concrete</SelectItem>
@@ -170,18 +167,35 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
           </SelectContent>
         </Select>
       </div>
-      
+
+      <div className="grid gap-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-foreground/70">Custom Paint Color</Label>
+          {wall.paintColor && (
+            <button onClick={() => updateWall(wall.id, { paintColor: undefined })} className="text-[10px] text-amber-500 hover:underline">
+              Reset
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={wall.paintColor ?? '#f0eeea'}
+            onChange={(e) => updateWall(wall.id, { paintColor: e.target.value })}
+            className="w-9 h-9 rounded-md border border-border bg-background cursor-pointer"
+          />
+          <span className="text-xs text-foreground/40 font-mono truncate">
+            {wall.paintColor ?? 'Material default'}
+          </span>
+        </div>
+      </div>
+
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Thickness</Label>
           <span className="text-xs font-mono text-amber-500">{wall.thickness} cm</span>
         </div>
-        <Slider 
-          value={[wall.thickness]} 
-          min={5} max={50} step={1}
-          onValueChange={([v]) => updateWall(wall.id, { thickness: v })}
-          onValueCommit={([v]) => updateWall(wall.id, { thickness: v }, true)}
-        />
+        <Slider value={[wall.thickness]} min={5} max={50} step={1} onValueChange={([v]) => updateWall(wall.id, { thickness: v })} />
       </div>
 
       <div className="grid gap-4">
@@ -189,12 +203,7 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
           <Label className="text-xs text-foreground/70">Height</Label>
           <span className="text-xs font-mono text-amber-500">{wall.height} cm</span>
         </div>
-        <Slider 
-          value={[wall.height]} 
-          min={100} max={400} step={10}
-          onValueChange={([v]) => updateWall(wall.id, { height: v })}
-          onValueCommit={([v]) => updateWall(wall.id, { height: v }, true)}
-        />
+        <Slider value={[wall.height]} min={100} max={400} step={10} onValueChange={([v]) => updateWall(wall.id, { height: v })} />
       </div>
     </div>
   );
@@ -205,17 +214,16 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
     <div className="flex flex-col gap-4">
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Room Name</Label>
-        <Input 
-          value={room.name} 
+        <Input
+          value={room.name}
           onChange={(e) => updateRoom(room.id, { name: e.target.value })}
-          onBlur={(e) => updateRoom(room.id, { name: e.target.value }, true)}
           className="bg-background border-border"
         />
       </div>
 
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Type</Label>
-        <Select value={room.type} onValueChange={(v) => updateRoom(room.id, { type: v }, true)}>
+        <Select value={room.type} onValueChange={(v) => updateRoom(room.id, { type: v })}>
           <SelectTrigger className="bg-background border-border">
             <SelectValue />
           </SelectTrigger>
@@ -229,10 +237,8 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
 
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Floor Material</Label>
-        <Select value={room.floorMaterial} onValueChange={(v) => updateRoom(room.id, { floorMaterial: v }, true)}>
-          <SelectTrigger className="bg-background border-border">
-            <SelectValue />
-          </SelectTrigger>
+        <Select value={room.floorMaterial} onValueChange={(v) => updateRoom(room.id, { floorMaterial: v })}>
+          <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
           <SelectContent className="bg-card border-border">
             <SelectItem value="hardwood">Hardwood</SelectItem>
             <SelectItem value="tiles">Ceramic Tiles</SelectItem>
@@ -246,14 +252,10 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Texture Scale</Label>
-          <span className="text-xs font-mono text-amber-500">{(room.textureScale ?? 1).toFixed(1)}x</span>
+          <span className="text-xs font-mono text-amber-500">{(room.textureScale ?? 1).toFixed(1)}×</span>
         </div>
-        <Slider 
-          value={[room.textureScale ?? 1]} 
-          min={0.1} max={5} step={0.1}
-          onValueChange={([v]) => updateRoom(room.id, { textureScale: v })}
-          onValueCommit={([v]) => updateRoom(room.id, { textureScale: v }, true)}
-        />
+        <Slider value={[room.textureScale ?? 1]} min={0.3} max={3} step={0.1}
+          onValueChange={([v]) => updateRoom(room.id, { textureScale: v })} />
       </div>
 
       <div className="grid gap-4">
@@ -261,12 +263,8 @@ function RoomProperties({ room, updateRoom }: { room: Room, updateRoom: any }) {
           <Label className="text-xs text-foreground/70">Texture Rotation</Label>
           <span className="text-xs font-mono text-amber-500">{room.textureRotation ?? 0}°</span>
         </div>
-        <Slider 
-          value={[room.textureRotation ?? 0]} 
-          min={0} max={360} step={15}
-          onValueChange={([v]) => updateRoom(room.id, { textureRotation: v })}
-          onValueCommit={([v]) => updateRoom(room.id, { textureRotation: v }, true)}
-        />
+        <Slider value={[room.textureRotation ?? 0]} min={0} max={90} step={5}
+          onValueChange={([v]) => updateRoom(room.id, { textureRotation: v })} />
       </div>
     </div>
   );
@@ -280,25 +278,24 @@ function DoorProperties({ door, updateDoor }: { door: Door, updateDoor: any }) {
           <Label className="text-xs text-foreground/70">Width</Label>
           <span className="text-xs font-mono text-amber-500">{door.width} cm</span>
         </div>
-        <Slider 
-          value={[door.width]} 
+        <Slider
+          value={[door.width]}
           min={60} max={200} step={5}
           onValueChange={([v]) => updateDoor(door.id, { width: v })}
-          onValueCommit={([v]) => updateDoor(door.id, { width: v }, true)}
         />
       </div>
 
       <div className="grid gap-2">
         <Label className="text-xs text-foreground/70">Swing Direction</Label>
         <div className="flex gap-2">
-          <button 
-            onClick={() => updateDoor(door.id, { swingDirection: 'left' }, true)}
+          <button
+            onClick={() => updateDoor(door.id, { swingDirection: 'left' })}
             className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'left' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
           >
             Left
           </button>
-          <button 
-            onClick={() => updateDoor(door.id, { swingDirection: 'right' }, true)}
+          <button
+            onClick={() => updateDoor(door.id, { swingDirection: 'right' })}
             className={`flex-1 py-2 text-xs rounded border ${door.swingDirection === 'right' ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
           >
             Right
@@ -317,49 +314,112 @@ function WindowProperties({ window, updateWindow }: { window: Window, updateWind
           <Label className="text-xs text-foreground/70">Width</Label>
           <span className="text-xs font-mono text-amber-500">{window.width} cm</span>
         </div>
-        <Slider value={[window.width]} min={40} max={300} step={10} onValueChange={([v]) => updateWindow(window.id, { width: v })} onValueCommit={([v]) => updateWindow(window.id, { width: v }, true)} />
+        <Slider value={[window.width]} min={40} max={300} step={10} onValueChange={([v]) => updateWindow(window.id, { width: v })} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Height</Label>
           <span className="text-xs font-mono text-amber-500">{window.height} cm</span>
         </div>
-        <Slider value={[window.height]} min={40} max={250} step={10} onValueChange={([v]) => updateWindow(window.id, { height: v })} onValueCommit={([v]) => updateWindow(window.id, { height: v }, true)} />
+        <Slider value={[window.height]} min={40} max={250} step={10} onValueChange={([v]) => updateWindow(window.id, { height: v })} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Sill Height</Label>
           <span className="text-xs font-mono text-amber-500">{window.sillHeight} cm</span>
         </div>
-        <Slider value={[window.sillHeight]} min={0} max={150} step={5} onValueChange={([v]) => updateWindow(window.id, { sillHeight: v })} onValueCommit={([v]) => updateWindow(window.id, { sillHeight: v }, true)} />
+        <Slider value={[window.sillHeight]} min={0} max={150} step={5} onValueChange={([v]) => updateWindow(window.id, { sillHeight: v })} />
+      </div>
+
+      <div className="grid gap-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-foreground/70">Curtains</Label>
+          <button
+            onClick={() => updateWindow(window.id, { curtains: !window.curtains })}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${window.curtains
+                ? 'bg-amber-500/20 border-amber-500/50 text-amber-500'
+                : 'border-border text-foreground/50 hover:text-foreground'
+              }`}
+          >
+            {window.curtains ? 'On' : 'Off'}
+          </button>
+        </div>
+        {window.curtains && (
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              type="color"
+              value={window.curtainColor ?? '#d8cfc0'}
+              onChange={(e) => updateWindow(window.id, { curtainColor: e.target.value })}
+              className="w-9 h-9 rounded-md border border-border bg-background cursor-pointer"
+            />
+            <span className="text-xs text-foreground/40 font-mono">{window.curtainColor ?? '#d8cfc0'}</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function FurnitureProperties({ item, updateFurniture }: { item: Furniture, updateFurniture: any }) {
+  const STYLES: { id: NonNullable<Furniture['style']>; label: string }[] = [
+    { id: 'modern', label: 'Modern' },
+    { id: 'classic', label: 'Classic' },
+    { id: 'minimalist', label: 'Minimal' },
+    { id: 'rustic', label: 'Rustic' },
+  ];
   return (
     <div className="flex flex-col gap-4">
+      <div className="grid gap-2">
+        <Label className="text-xs text-foreground/70">Style</Label>
+        <div className="grid grid-cols-4 gap-1">
+          {STYLES.map(s => (
+            <button
+              key={s.id}
+              onClick={() => updateFurniture(item.id, { style: s.id })}
+              className={`py-1.5 rounded-md text-[10px] font-semibold border transition-all truncate ${(item.style ?? 'modern') === s.id
+                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-500'
+                  : 'border-border text-foreground/50 hover:text-foreground hover:bg-muted'
+                }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-xs text-foreground/70">Color / Material</Label>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={item.color}
+            onChange={(e) => updateFurniture(item.id, { color: e.target.value })}
+            className="w-9 h-9 rounded-md border border-border bg-background cursor-pointer"
+          />
+          <span className="text-xs text-foreground/40 font-mono">{item.color}</span>
+        </div>
+      </div>
+
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Rotation</Label>
           <span className="text-xs font-mono text-amber-500">{item.rotation}°</span>
         </div>
-        <Slider value={[item.rotation]} min={0} max={360} step={15} onValueChange={([v]) => updateFurniture(item.id, { rotation: v })} onValueCommit={([v]) => updateFurniture(item.id, { rotation: v }, true)} />
+        <Slider value={[item.rotation]} min={0} max={360} step={15} onValueChange={([v]) => updateFurniture(item.id, { rotation: v })} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Width</Label>
           <span className="text-xs font-mono text-amber-500">{item.width} cm</span>
         </div>
-        <Slider value={[item.width]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { width: v })} onValueCommit={([v]) => updateFurniture(item.id, { width: v }, true)} />
+        <Slider value={[item.width]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { width: v })} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Depth</Label>
           <span className="text-xs font-mono text-amber-500">{item.depth} cm</span>
         </div>
-        <Slider value={[item.depth]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { depth: v })} onValueCommit={([v]) => updateFurniture(item.id, { depth: v }, true)} />
+        <Slider value={[item.depth]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { depth: v })} />
       </div>
     </div>
   );

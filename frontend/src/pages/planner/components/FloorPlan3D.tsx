@@ -254,7 +254,7 @@ function Wall3D({ wall, doors, windows }: { wall: Wall; doors: Door[]; windows: 
   const wallTex = wall.paintColor ? null : wallTextureFor(matDef);
   const matArgs = wall.paintColor
     ? { color: wall.paintColor, roughness: 0.75, metalness: 0 }
-    : { color: matDef.color, roughness: matDef.roughness, metalness: matDef.metalness ?? 0 };
+    : { color: matDef.color, roughness: matDef.roughness, metalness: matDef.metalness };
 
   const wallDoors = doors.filter(d => d.wallId === wall.id);
   const wallWindows = windows.filter(w => w.wallId === wall.id);
@@ -398,26 +398,22 @@ function Wall3D({ wall, doors, windows }: { wall: Wall; doors: Door[]; windows: 
           <meshStandardMaterial color="#2a2a2a" />
         </mesh>
       );
-      if (o.curtains) {
-        const curtainColor = o.curtainColor ?? '#d8cfc0';
-        const curtainH = wall.height - sill * 0.15; // hangs from near-ceiling down past the sill
-        const curtainY = curtainH / 2 + sill * 0.1;
+      // curtains
+      if (o.type === 'window' && o.curtains) {
+        const cc = o.curtainColor ?? '#d8cfc0';
+        const curtH = wall.height - sill * 0.1;
+        const curtY = curtH / 2 + sill * 0.05;
         const panelW = (right - left) * 0.38;
         [-1, 1].forEach((side) => {
           segs.push(
-            <mesh
-              key={`curtain-${i}-${side}`}
-              position={[openLocalX + side * ((right - left) / 2 + panelW * 0.3), curtainY, wall.thickness / 2 + 3]}
-              castShadow
-            >
-              <boxGeometry args={[panelW, curtainH, 3]} />
-              <meshStandardMaterial map={makeCarpetTexture(curtainColor)} roughness={0.95} />
+            <mesh key={`curtain-${i}-${side}`} position={[openLocalX + side * ((right - left) / 2 + panelW * 0.3), curtY, wall.thickness / 2 + 3]} castShadow>
+              <boxGeometry args={[panelW, curtH, 3]} />
+              <meshStandardMaterial map={makeCarpetTexture(cc)} roughness={0.95} />
             </mesh>
           );
         });
-        // curtain rod
         segs.push(
-          <mesh key={`rod-${i}`} position={[openLocalX, wall.height - sill * 0.1, wall.thickness / 2 + 3]} rotation={[0, 0, Math.PI / 2]}>
+          <mesh key={`rod-${i}`} position={[openLocalX, wall.height - 6, wall.thickness / 2 + 3]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[1, 1, right - left + panelW * 1.4, 8]} />
             <meshStandardMaterial color="#4a4a4a" metalness={0.6} roughness={0.4} />
           </mesh>
@@ -443,10 +439,7 @@ function FurnitureMesh({ f }: { f: Furniture }) {
   const woodTex = useMemo(() => makeWoodTexture(shade(base, -0.2)), [base]);
   const fabricTex = useMemo(() => makeCarpetTexture(base), [base]);
 
-  // Style-driven detail knobs, shared across cases below:
-  // - legTaper: how much slimmer legs get toward the floor (rustic = chunky, minimalist = thin)
-  // - cushions: whether soft-seating gets scatter cushions (skipped for minimalist)
-  // - legMetal: whether legs read as metal (modern) or wood (classic/rustic/minimalist default wood)
+  // Style-driven geometry knobs
   const legTaper = style === 'rustic' ? 1.3 : style === 'minimalist' ? 0.6 : 1;
   const showCushions = style !== 'minimalist';
   const legsAreMetal = style === 'modern';
@@ -459,16 +452,14 @@ function FurnitureMesh({ f }: { f: Furniture }) {
           <mesh position={[0, 55, -d / 2 + 8]} castShadow><boxGeometry args={[w, 40, 16]} /><meshStandardMaterial color={dark} roughness={0.85} /></mesh>
           <mesh position={[-w / 2 + 8, 45, 0]} castShadow><boxGeometry args={[16, 30, d - 16]} /><meshStandardMaterial color={dark} roughness={0.85} /></mesh>
           <mesh position={[w / 2 - 8, 45, 0]} castShadow><boxGeometry args={[16, 30, d - 16]} /><meshStandardMaterial color={dark} roughness={0.85} /></mesh>
-          {showCushions && (
-            <>
-              <mesh position={[-w / 4, 46, -d / 4]} rotation={[0, 0.3, 0.1]} castShadow>
-                <boxGeometry args={[26, 10, 26]} /><meshStandardMaterial color={light} roughness={0.9} />
-              </mesh>
-              <mesh position={[w / 4, 46, -d / 4]} rotation={[0, -0.25, -0.1]} castShadow>
-                <boxGeometry args={[26, 10, 26]} /><meshStandardMaterial color={shade(base, 0.4)} roughness={0.9} />
-              </mesh>
-            </>
-          )}
+          {showCushions && <>
+            <mesh position={[-w / 4, 46, -d / 4]} rotation={[0, 0.3, 0.1]} castShadow>
+              <boxGeometry args={[26, 10, 26]} /><meshStandardMaterial color={light} roughness={0.9} />
+            </mesh>
+            <mesh position={[w / 4, 46, -d / 4]} rotation={[0, -0.25, -0.1]} castShadow>
+              <boxGeometry args={[26, 10, 26]} /><meshStandardMaterial color={shade(base, 0.4)} roughness={0.9} />
+            </mesh>
+          </>}
         </group>
       );
 
@@ -500,7 +491,7 @@ function FurnitureMesh({ f }: { f: Furniture }) {
             <mesh key={i} position={[lx, topH / 2, lz]} castShadow>
               <cylinderGeometry args={[legR * 0.8, legR, topH, 10]} />
               {legsAreMetal
-                ? <meshStandardMaterial color="#3a3a3a" roughness={0.35} metalness={0.7} />
+                ? <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.8} />
                 : <meshStandardMaterial color={dark} roughness={0.5} metalness={0.05} />}
             </mesh>
           ))}
@@ -521,7 +512,7 @@ function FurnitureMesh({ f }: { f: Furniture }) {
             <mesh key={i} position={[lx, seatH / 2, lz]} castShadow>
               <cylinderGeometry args={[legR * 0.7, legR, seatH, 8]} />
               {legsAreMetal
-                ? <meshStandardMaterial color="#3a3a3a" roughness={0.3} metalness={0.75} />
+                ? <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.8} />
                 : <meshStandardMaterial color={dark} roughness={0.45} metalness={0.05} />}
             </mesh>
           ))}
@@ -589,8 +580,7 @@ function FurnitureMesh({ f }: { f: Furniture }) {
       );
     }
 
-    // ── seating additions: armchair/loveseat share the sofa's construction at
-    // different scale; bench and ottoman are simpler upholstered forms
+    // ── armchair / loveseat: compact sofa construction ─────────────────────
     case 'armchair':
     case 'loveseat':
       return (
@@ -607,6 +597,7 @@ function FurnitureMesh({ f }: { f: Furniture }) {
         </group>
       );
 
+    // ── bench: plank top with four legs ────────────────────────────────────
     case 'bench':
       return (
         <group>
@@ -614,14 +605,13 @@ function FurnitureMesh({ f }: { f: Furniture }) {
           {[[-w / 2 + 6, -d / 2 + 6], [w / 2 - 6, -d / 2 + 6], [-w / 2 + 6, d / 2 - 6], [w / 2 - 6, d / 2 - 6]].map(([lx, lz], i) => (
             <mesh key={i} position={[lx, 20, lz]} castShadow>
               <cylinderGeometry args={[2 * legTaper, 2.5 * legTaper, 40, 8]} />
-              {legsAreMetal
-                ? <meshStandardMaterial color="#3a3a3a" roughness={0.3} metalness={0.7} />
-                : <meshStandardMaterial color={dark} roughness={0.5} />}
+              {legsAreMetal ? <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.8} /> : <meshStandardMaterial color={dark} roughness={0.5} />}
             </mesh>
           ))}
         </group>
       );
 
+    // ── ottoman: simple upholstered cube ───────────────────────────────────
     case 'ottoman':
       return (
         <mesh position={[0, 22, 0]} castShadow>
@@ -630,7 +620,7 @@ function FurnitureMesh({ f }: { f: Furniture }) {
         </mesh>
       );
 
-    // ── nightstand: small cabinet with a drawer face and a lamp on top ──────
+    // ── nightstand: small two-drawer cabinet ───────────────────────────────
     case 'nightstand':
       return (
         <group>
@@ -640,48 +630,52 @@ function FurnitureMesh({ f }: { f: Furniture }) {
         </group>
       );
 
-    // ── storage: bookshelf/tv-console/cabinet share a cased-goods construction ─
-    case 'bookshelf': {
-      const shelves = 4;
+    // ── bookshelf: tall case with four shelves ──────────────────────────────
+    case 'bookshelf':
       return (
         <group>
           <mesh position={[0, 100, 0]} castShadow><boxGeometry args={[w, 200, d]} /><meshStandardMaterial map={woodTex} roughness={0.6} /></mesh>
-          {Array.from({ length: shelves }).map((_, i) => (
-            <mesh key={i} position={[0, 40 + i * 45, d * 0.05]}>
+          {[40, 84, 128, 172].map((sy, i) => (
+            <mesh key={i} position={[0, sy, 0]}>
               <boxGeometry args={[w - 6, 2, d - 6]} /><meshStandardMaterial color={dark} roughness={0.6} />
             </mesh>
           ))}
         </group>
       );
-    }
 
+    // ── tv-console: low wide cabinet with TV above ─────────────────────────
     case 'tv-console':
       return (
         <group>
           <mesh position={[0, 25, 0]} castShadow><boxGeometry args={[w, 50, d]} /><meshStandardMaterial map={woodTex} roughness={0.5} /></mesh>
-          <mesh position={[0, 51, 0]} castShadow><boxGeometry args={[w + 2, 2, d + 2]} /><meshStandardMaterial color={light} roughness={0.2} /></mesh>
-          <mesh position={[0, 90, -d / 2 + 3]}>
+          <mesh position={[0, 51, 0]}><boxGeometry args={[w + 2, 2, d + 2]} /><meshStandardMaterial color={light} roughness={0.2} /></mesh>
+          <mesh position={[0, 90, -d / 2 + 3]} castShadow>
             <boxGeometry args={[w * 0.75, w * 0.42, 4]} /><meshStandardMaterial color="#111" roughness={0.2} metalness={0.3} />
           </mesh>
         </group>
       );
 
+    // ── cabinet: mid-height two-door case ──────────────────────────────────
     case 'cabinet':
       return (
         <group>
           <mesh position={[0, 45, 0]} castShadow><boxGeometry args={[w, 90, d]} /><meshStandardMaterial map={woodTex} roughness={0.55} /></mesh>
           <mesh position={[0, 45, d / 2 + 0.3]}><boxGeometry args={[1.2, 86, 0.5]} /><meshStandardMaterial color={dark} /></mesh>
+          {[-w / 4, w / 4].map((hx, i) => (
+            <mesh key={i} position={[hx, 50, d / 2 + 0.8]} castShadow>
+              <sphereGeometry args={[1.5, 6, 6]} /><meshStandardMaterial color="#d4af37" metalness={0.8} roughness={0.3} />
+            </mesh>
+          ))}
         </group>
       );
 
-    // ── decor: plant / lamp / mirror — small, purely decorative geometry ────
+    // ── decor: plant / lamp / mirror ───────────────────────────────────────
     case 'plant':
       return (
         <group>
           <mesh position={[0, 15, 0]} castShadow><cylinderGeometry args={[w / 2.5, w / 3, 30, 12]} /><meshStandardMaterial color="#8a6b4e" roughness={0.8} /></mesh>
           <mesh position={[0, 55, 0]} castShadow>
-            <sphereGeometry args={[Math.max(w, d) / 2, 8, 8]} />
-            <meshStandardMaterial color="#3a6b3a" roughness={0.9} />
+            <sphereGeometry args={[Math.max(w, d) / 2, 9, 9]} /><meshStandardMaterial color="#3a6b3a" roughness={0.9} />
           </mesh>
         </group>
       );
@@ -689,13 +683,12 @@ function FurnitureMesh({ f }: { f: Furniture }) {
     case 'lamp':
       return (
         <group>
-          <mesh position={[0, 3, 0]} castShadow><cylinderGeometry args={[w / 2.2, w / 2.2, 6, 12]} /><meshStandardMaterial color={dark} roughness={0.4} metalness={0.4} /></mesh>
-          <mesh position={[0, 55, 0]} castShadow><cylinderGeometry args={[1.5, 1.5, 100, 8]} /><meshStandardMaterial color={dark} roughness={0.4} metalness={0.4} /></mesh>
+          <mesh position={[0, 3, 0]}><cylinderGeometry args={[w / 2.2, w / 2.2, 6, 12]} /><meshStandardMaterial color={dark} roughness={0.4} metalness={0.4} /></mesh>
+          <mesh position={[0, 55, 0]}><cylinderGeometry args={[1.5, 1.5, 100, 8]} /><meshStandardMaterial color={dark} roughness={0.4} metalness={0.4} /></mesh>
           <mesh position={[0, 112, 0]} castShadow>
-            <coneGeometry args={[w / 1.8, 26, 16, 1, true]} />
-            <meshStandardMaterial color={base} roughness={0.7} side={THREE.DoubleSide} />
+            <coneGeometry args={[w / 1.8, 26, 16, 1, true]} /><meshStandardMaterial color={base} roughness={0.7} side={THREE.DoubleSide} />
           </mesh>
-          <pointLight position={[0, 105, 0]} intensity={0.4} distance={200} color="#ffe8b0" />
+          <pointLight position={[0, 105, 0]} intensity={0.45} distance={220} color="#ffe8b0" />
         </group>
       );
 
@@ -704,35 +697,36 @@ function FurnitureMesh({ f }: { f: Furniture }) {
         <group>
           <mesh position={[0, 90, 0]} castShadow><boxGeometry args={[w, 120, 4]} /><meshStandardMaterial color={dark} roughness={0.5} metalness={0.3} /></mesh>
           <mesh position={[0, 90, 2.2]}>
-            <boxGeometry args={[w - 8, 112, 0.5]} />
-            <meshStandardMaterial color="#dbe9f5" roughness={0.05} metalness={0.6} />
+            <boxGeometry args={[w - 8, 112, 0.5]} /><meshStandardMaterial color="#dbe9f5" roughness={0.05} metalness={0.6} />
           </mesh>
         </group>
       );
 
-    // ── outdoor: simple tree and fence-panel geometry ───────────────────────
+    // ── outdoor: tree and fence ────────────────────────────────────────────
     case 'outdoor-tree':
       return (
         <group>
           <mesh position={[0, 60, 0]} castShadow><cylinderGeometry args={[6, 9, 120, 10]} /><meshStandardMaterial color="#6b4a30" roughness={0.9} /></mesh>
           <mesh position={[0, 145, 0]} castShadow>
-            <sphereGeometry args={[Math.max(w, d) / 2, 10, 10]} />
-            <meshStandardMaterial color="#3a6b3a" roughness={0.95} />
+            <sphereGeometry args={[Math.max(w, d) / 2, 10, 10]} /><meshStandardMaterial color="#3a6b3a" roughness={0.95} />
           </mesh>
         </group>
       );
 
-    case 'fence':
+    case 'fence': {
+      const posts = Math.max(2, Math.round(w / 25));
       return (
         <group>
-          {Array.from({ length: Math.max(2, Math.round(w / 25)) }).map((_, i, arr) => (
-            <mesh key={i} position={[-w / 2 + (w / arr.length) * (i + 0.5), 45, 0]} castShadow>
+          {Array.from({ length: posts }).map((_, i) => (
+            <mesh key={i} position={[-w / 2 + (w / posts) * (i + 0.5), 45, 0]} castShadow>
               <boxGeometry args={[6, 90, d]} /><meshStandardMaterial map={woodTex} roughness={0.75} />
             </mesh>
           ))}
-          <mesh position={[0, 80, 0]} castShadow><boxGeometry args={[w, 8, d]} /><meshStandardMaterial map={woodTex} roughness={0.75} /></mesh>
+          <mesh position={[0, 75, 0]} castShadow><boxGeometry args={[w, 7, d]} /><meshStandardMaterial map={woodTex} roughness={0.75} /></mesh>
+          <mesh position={[0, 38, 0]} castShadow><boxGeometry args={[w, 7, d]} /><meshStandardMaterial map={woodTex} roughness={0.75} /></mesh>
         </group>
       );
+    }
 
     default:
       return (
@@ -745,14 +739,14 @@ function FurnitureMesh({ f }: { f: Furniture }) {
 }
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
-// ─── Room floor (own component so per-room texture scale/rotation can use hooks) ─
+// ─── RoomFloor: own component so per-room texture scale/rotation can use hooks ──
+const RUG_TYPES: FurnitureType[] = ['sofa', 'loveseat', 'bed', 'armchair'];
+
 function RoomFloor({ room }: { room: Room }) {
   if (room.points.length < 3) return null;
   const matDef = FLOOR_MATERIALS[room.floorMaterial] ?? FLOOR_MATERIALS.hardwood;
   const baseTex = textureFor(matDef);
 
-  // Clone rather than mutate the shared cached texture, so adjusting this room's
-  // scale/rotation doesn't affect every other room using the same floor material.
   const tex = useMemo(() => {
     const t = baseTex.clone();
     t.needsUpdate = true;
@@ -771,13 +765,12 @@ function RoomFloor({ room }: { room: Room }) {
 
   const xs = Math.min(...room.points.map(p => p.x));
   const ys = Math.min(...room.points.map(p => p.y));
-  const extrudeSettings = { depth: 8, bevelEnabled: false };
 
   return (
     <group>
-      <group rotation={[Math.PI / 2, 0, 0]} position={[0, -8, 0]}>
+      <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]}>
         <mesh receiveShadow castShadow>
-          <extrudeGeometry args={[shape, extrudeSettings]} />
+          <extrudeGeometry args={[shape, { depth: 8, bevelEnabled: false }]} />
           <meshStandardMaterial map={tex} roughness={matDef.roughness} metalness={matDef.metalness} />
         </mesh>
       </group>
@@ -788,37 +781,26 @@ function RoomFloor({ room }: { room: Room }) {
   );
 }
 
-// ─── Ceiling light — one per room, positioned at its centroid, actually lights the scene ─
 function RoomCeilingLight({ room, wallHeight }: { room: Room; wallHeight: number }) {
   const cx = room.points.reduce((s, p) => s + p.x, 0) / room.points.length;
   const cy = room.points.reduce((s, p) => s + p.y, 0) / room.points.length;
   return (
     <group position={[cx, wallHeight - 4, cy]}>
       <pointLight intensity={0.9} distance={500} decay={2} color="#fff4e0" castShadow shadow-mapSize={[512, 512]} />
-      <mesh>
-        <cylinderGeometry args={[10, 10, 3, 16]} />
-        <meshStandardMaterial color="#e8e5df" roughness={0.4} />
-      </mesh>
+      <mesh><cylinderGeometry args={[10, 10, 3, 16]} /><meshStandardMaterial color="#e8e5df" roughness={0.4} /></mesh>
       <mesh position={[0, -3, 0]}>
-        <sphereGeometry args={[5, 12, 12]} />
-        <meshStandardMaterial color="#fff8e8" emissive="#fff2cc" emissiveIntensity={0.8} roughness={0.3} />
+        <sphereGeometry args={[5, 12, 12]} /><meshStandardMaterial color="#fff8e8" emissive="#fff2cc" emissiveIntensity={0.8} roughness={0.3} />
       </mesh>
     </group>
   );
 }
 
-// ─── Auto-rug — a soft decorative rug placed under seating/bed clusters, derived
-// purely from furniture footprint (not a stored entity, so it needs no schema change) ─
-const RUG_TYPES: FurnitureType[] = ['sofa', 'loveseat', 'bed', 'armchair'];
-
 function AutoRug({ f }: { f: Furniture }) {
-  const rugW = f.width * 1.6;
-  const rugD = f.depth * 1.8;
-  const rugTex = useMemo(() => makeCarpetTexture(shade(f.color, 0.5)), [f.color]);
+  const rugTex = useMemo(() => makeCarpetTexture(shade(f.color, 0.45)), [f.color]);
   return (
-    <mesh position={[0, -7.4, f.depth * 0.15]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry args={[rugW, rugD]} />
-      <meshStandardMaterial map={rugTex} roughness={0.95} transparent opacity={0.92} />
+    <mesh position={[0, -7.4, f.depth * 0.1]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={[f.width * 1.6, f.depth * 1.75]} />
+      <meshStandardMaterial map={rugTex} roughness={0.95} transparent opacity={0.88} />
     </mesh>
   );
 }
@@ -878,9 +860,8 @@ function SceneContent() {
       ))}
 
       {showCeilingLights && rooms.map((room) => {
-        // use the tallest wall bounding this room's rough area as a stand-in ceiling height
-        const roomWallHeight = walls.length > 0 ? Math.max(...walls.map(w => w.height)) : 270;
-        return <RoomCeilingLight key={`light-${room.id}`} room={room} wallHeight={roomWallHeight} />;
+        const avgH = walls.length > 0 ? walls.reduce((s, w) => s + w.height, 0) / walls.length : 270;
+        return <RoomCeilingLight key={`cl-${room.id}`} room={room} wallHeight={avgH} />;
       })}
 
       <ContactShadows position={[500, -7.9, 500]} opacity={0.35} scale={3000} blur={2.5} far={20} />
