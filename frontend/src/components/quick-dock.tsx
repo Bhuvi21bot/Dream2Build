@@ -351,7 +351,7 @@ export function QuickDock() {
                 <FolderKanban className="h-4 w-4 text-[#a47148]" /> Your projects
               </span>
             </HoveredLink>
-            <HoveredLink href="/account/settings" onClick={close}>
+            <HoveredLink href="/settings" onClick={close}>
               <span className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-[#a47148]" /> Settings
               </span>

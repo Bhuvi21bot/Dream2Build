@@ -915,7 +915,7 @@ function SceneContent() {
       {rooms.map((room) => (
         <group key={room.id}>
             <RoomFloor room={room} />
-            {(cameraMode === 'orbit' || cameraMode === 'firstperson') && <RoomCeiling room={room} wallHeight={avgH} />}
+            {cameraMode === 'firstperson' && <RoomCeiling room={room} wallHeight={avgH} />}
         </group>
       ))}
 

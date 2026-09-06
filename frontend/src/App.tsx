@@ -37,6 +37,7 @@ import {
 
 import { DesignGitRepo } from "@/pages/design-git-repo";
 import { DesignWorkspace } from "@/pages/design-workspace";
+import { SettingsPage } from "@/pages/settings";
 
 const Planner = lazy(() => import("@/pages/planner"));
 
@@ -85,6 +86,7 @@ function Router() {
             <Route path="/community" component={Community} />
             <Route path="/marketplace" component={Marketplace} />
             <Route path="/about" component={About} />
+            <Route path="/settings" component={SettingsPage} />
 
             {/* ENTRY POINTS */}
             <Route path="/wizard" component={SmartWizard} />
