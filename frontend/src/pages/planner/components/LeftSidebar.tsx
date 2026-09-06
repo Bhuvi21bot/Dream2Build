@@ -286,9 +286,14 @@ export function LeftSidebar() {
                       {filtered.map(({ type, label, icon: Icon }) => (
                         <button
                           key={type}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/furniture-type', type);
+                            setSelectedFurnitureType(type);
+                          }}
                           onClick={() => setSelectedFurnitureType(type)}
                           className={cn(
-                            'flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl transition-all text-center',
+                            'flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl transition-all text-center cursor-grab active:cursor-grabbing',
                             selectedFurnitureType === type
                               ? 'bg-amber-500/20 text-amber-500 shadow-[inset_0_0_0_1.5px_rgba(245,158,11,0.5)]'
                               : 'text-foreground/70 hover:bg-muted hover:text-foreground'

@@ -211,6 +211,8 @@ export function FloorPlan2D() {
   const viewRef = useRef({ x: 80, y: 80, scale: 1 });
   const dragRef = useRef<DragKind>(null);
   const mouseRef = useRef<Point>({ x: 0, y: 0 }); // world coords
+  const shiftKeyRef = useRef<boolean>(false);
+  const [selectionBox, setSelectionBox] = useState<{ start: Point, end: Point } | null>(null);
 
   const store = usePlannerStore();
   const storeRef = useRef(store);
@@ -248,6 +250,11 @@ export function FloorPlan2D() {
     return best;
   };
 
+  // Duplicate wallJointSnap removed. Use the later implementation that supports exclusion.
+
+  // snapWallPoint consolidated below (removed duplicate)
+
+
   // nearest existing wall ENDPOINT (start or end) within join range — used to
   // auto-join new/dragged walls onto existing corners instead of leaving a gap
   const wallJointSnap = (p: Point, excludeWallId?: string): Point | null => {
@@ -263,8 +270,22 @@ export function FloorPlan2D() {
     return best && bestD <= WALL_JOIN_DIST ? { x: best.x, y: best.y } : null;
   };
   // wall endpoint placement: prefer joining an existing corner, else fall back to grid snap
-  const snapWallPoint = (p: Point, excludeWallId?: string): Point =>
-    wallJointSnap(p, excludeWallId) ?? snapP(p);
+  const snapWallPoint = (pt: Point, excludeWallId?: string): Point => {
+    // Apply grid snap first
+    let p = snapP(pt);
+    // Angle snapping when drawing with Shift held and dragging start point
+    if (shiftKeyRef.current && dragRef.current && 'start' in dragRef.current) {
+      const start = (dragRef.current as any).start;
+      const dx = pt.x - start.x;
+      const dy = pt.y - start.y;
+      const angle = Math.atan2(dy, dx);
+      const snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);
+      const len = Math.hypot(dx, dy);
+      p = { x: start.x + Math.cos(snappedAngle) * len, y: start.y + Math.sin(snappedAngle) * len };
+    }
+    const joint = wallJointSnap(p, excludeWallId);
+    return joint ?? p;
+  };
 
   // ── keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -615,6 +636,20 @@ export function FloorPlan2D() {
       }
     }
 
+    if (drag && drag.kind === 'pan' && shiftKeyRef.current) {
+        // Selection Box marquee
+        const sbX = Math.min(drag.sx0, mouse.x * vs + vx);
+        const sbY = Math.min(drag.sy0, mouse.y * vs + vy);
+        const sbW = Math.abs(drag.sx0 - (mouse.x * vs + vx));
+        const sbH = Math.abs(drag.sy0 - (mouse.y * vs + vy));
+        octx.setTransform(1, 0, 0, 1, 0, 0); // screen coords
+        octx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+        octx.fillRect(sbX, sbY, sbW, sbH);
+        octx.strokeStyle = '#3b82f6';
+        octx.lineWidth = 1;
+        octx.strokeRect(sbX, sbY, sbW, sbH);
+    }
+
     octx.restore();
   }, []);
 
@@ -623,6 +658,52 @@ export function FloorPlan2D() {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(render);
   });
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Shift') shiftKeyRef.current = true;
+        
+        // Delete
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            const { selectedId, selectedIds, deleteWall, deleteRoom, deleteDoor, deleteWindow, deleteFurniture } = storeRef.current;
+            const ids = selectedId ? [selectedId] : selectedIds;
+            ids.forEach(id => {
+                if (storeRef.current.walls.find(w => w.id === id)) deleteWall(id);
+                if (storeRef.current.rooms.find(r => r.id === id)) deleteRoom(id);
+                if (storeRef.current.doors.find(d => d.id === id)) deleteDoor(id);
+                if (storeRef.current.windows.find(w => w.id === id)) deleteWindow(id);
+                if (storeRef.current.furniture.find(f => f.id === id)) deleteFurniture(id);
+            });
+        }
+
+        // Copy/Paste
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+            const { selectedId, selectedIds, furniture } = storeRef.current;
+            const ids = selectedId ? [selectedId] : selectedIds;
+            const toCopy = furniture.filter(f => ids.includes(f.id));
+            if (toCopy.length > 0) storeRef.current.setClipboard(toCopy);
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+            const { clipboard, addFurniture } = storeRef.current;
+            const pastedIds: string[] = [];
+            clipboard.forEach((f: Furniture) => {
+                const newId = 'f_' + Math.random().toString(36).slice(2);
+                addFurniture({ ...f, id: newId, position: { x: f.position.x + 20, y: f.position.y + 20 } });
+                pastedIds.push(newId);
+            });
+            if (pastedIds.length > 0) storeRef.current.setSelectedIds(pastedIds);
+        }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+        if (e.key === 'Shift') shiftKeyRef.current = false;
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+        window.removeEventListener('keydown', onKeyDown);
+        window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
 
   // ── mouse helpers ──────────────────────────────────────────────────────────
   const getXY = (e: React.MouseEvent) => {
@@ -728,20 +809,47 @@ export function FloorPlan2D() {
     if (hit.type === 'room-vertex' || hit.type === 'furn-resize') return 'grab';
     if (hit.type === 'wall-start' || hit.type === 'wall-end') return 'grab';
     if (hit.type === 'furniture' || hit.type === 'room') return 'move';
-    if (hit.type === 'wall') return 'pointer';
+    if (hit.type === 'wall') return 'text'; // Show text cursor for wall to hint editing
     return 'default';
   };
 
   const [cursor, setCursor] = useState('default');
 
-  // ── double click: close polygon ────────────────────────────────────────────
+  // ── double click: close polygon or edit wall length ────────────────────────
   const onDblClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    const { activeTool, polygonPoints, closePolygon } = storeRef.current;
+    const { sx, sy } = getXY(e);
+    const world = toWorld(sx, sy);
+    const { activeTool, polygonPoints, closePolygon, walls, updateWall } = storeRef.current;
+    
     if (activeTool === 'polygon-room' && polygonPoints.length >= 3) {
       closePolygon();
+      return;
     }
-  }, []);
+
+    const hit = hitTest(world);
+    if (hit && hit.type === 'wall') {
+        const wall = walls.find(w => w.id === hit.id);
+        if (wall) {
+            const dx = wall.end.x - wall.start.x;
+            const dy = wall.end.y - wall.start.y;
+            const currentLen = Math.round(Math.hypot(dx, dy));
+            const newLenStr = window.prompt("Enter exact wall length (cm):", currentLen.toString());
+            if (newLenStr) {
+                const newLen = parseFloat(newLenStr);
+                if (!isNaN(newLen) && newLen > 0) {
+                    const angle = Math.atan2(dy, dx);
+                    updateWall(wall.id, {
+                        end: {
+                            x: wall.start.x + Math.cos(angle) * newLen,
+                            y: wall.start.y + Math.sin(angle) * newLen
+                        }
+                    }, true);
+                }
+            }
+        }
+    }
+  }, [toWorld]);
 
   // ── mouse down ─────────────────────────────────────────────────────────────
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -849,6 +957,7 @@ export function FloorPlan2D() {
 
     // empty canvas → pan (store the screen-space origin so mousemove can compute a clean delta)
     setSelectedId(null);
+    storeRef.current.setSelectedIds([]);
     dragRef.current = { kind: 'pan', vx0: vx, vy0: vy, sx0: sx, sy0: sy };
   }, [toWorld]);
 
@@ -866,8 +975,12 @@ export function FloorPlan2D() {
     if (!drag) return;
 
     if (drag.kind === 'pan') {
-      viewRef.current.x = drag.vx0 + (sx - drag.sx0);
-      viewRef.current.y = drag.vy0 + (sy - drag.sy0);
+      if (shiftKeyRef.current) {
+        // Selection Box marquee, wait for mouse up to select
+      } else {
+        viewRef.current.x = drag.vx0 + (sx - drag.sx0);
+        viewRef.current.y = drag.vy0 + (sy - drag.sy0);
+      }
       return;
     }
 
@@ -944,7 +1057,20 @@ export function FloorPlan2D() {
     const world = toWorld(sx, sy);
     const sp = snapP(world);
     const drag = dragRef.current;
-    const { activeTool, addWall, addRoom, selectedRoomType } = storeRef.current;
+    const { activeTool, addWall, addRoom, selectedRoomType, setSelectedIds, furniture } = storeRef.current;
+    shiftKeyRef.current = e.shiftKey;
+
+    if (drag?.kind === 'pan' && shiftKeyRef.current) {
+        const { sx0, sy0 } = drag;
+        const w1 = toWorld(sx0, sy0);
+        const w2 = toWorld(sx, sy);
+        const minX = Math.min(w1.x, w2.x);
+        const minY = Math.min(w1.y, w2.y);
+        const maxX = Math.max(w1.x, w2.x);
+        const maxY = Math.max(w1.y, w2.y);
+        const selected = furniture.filter(f => f.position.x >= minX && f.position.x <= maxX && f.position.y >= minY && f.position.y <= maxY).map(f => f.id);
+        setSelectedIds(selected);
+    }
 
     if (drag?.kind === 'draw-wall') {
       const endPt = snapWallPoint(world);
@@ -1036,6 +1162,38 @@ export function FloorPlan2D() {
     forceRender(n => n + 1);
   }, []);
 
+  // ── drag and drop from catalog ──────────────────────────────────────────────
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('application/furniture-type');
+    if (type) {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+            const sx = e.clientX - rect.left;
+            const sy = e.clientY - rect.top;
+            const world = toWorld(sx, sy);
+            const { addFurniture, selectedFurnitureStyle } = storeRef.current;
+            const cfg = FURNITURE_CFG[type as any];
+            if (cfg) {
+                addFurniture({
+                    id: 'f_' + Math.random().toString(36).slice(2),
+                    type: type as any,
+                    position: snapP(world),
+                    rotation: 0,
+                    width: cfg.w, depth: cfg.d,
+                    color: cfg.color,
+                    style: selectedFurnitureStyle
+                });
+            }
+        }
+    }
+  }, [toWorld, snapP]);
+
   return (
     <div ref={containerRef} className="w-full h-full relative overflow-hidden select-none" style={{ background: '#16213e' }}>
       <canvas ref={canvasRef} className="absolute inset-0" />
@@ -1051,6 +1209,8 @@ export function FloorPlan2D() {
         onDoubleClick={onDblClick}
         onMouseLeave={() => { dragRef.current = null; }}
         onWheel={onWheel}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
       />
 
       {/* export / import */}
@@ -1074,6 +1234,14 @@ export function FloorPlan2D() {
           {importError}
         </div>
       )}
+
+      {/* Scale Ruler */}
+      <div className="absolute bottom-4 left-4 z-30 pointer-events-none text-white/70 font-mono text-[10px]">
+        <div style={{ width: `${100 * store.scale}px` }} className="border-b border-l border-r border-white/50 h-2 flex justify-between items-end px-1">
+            <span>0</span>
+            <span>1m</span>
+        </div>
+      </div>
 
       {/* room shape picker */}
       {store.activeTool === 'room' && (

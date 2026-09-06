@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, PointerLockControls, Environment, OrthographicCamera, PerspectiveCamera, ContactShadows } from '@react-three/drei';
+import { OrbitControls, PointerLockControls, OrthographicCamera, PerspectiveCamera, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { usePlannerStore } from '../store';
 import { Wall, Door, Window, Furniture, FurnitureType, FurnitureStyle, Room } from '../types';
@@ -448,16 +448,29 @@ function FurnitureMesh({ f }: { f: Furniture }) {
     case 'sofa':
       return (
         <group>
-          <mesh position={[0, 20, 0]} castShadow><boxGeometry args={[w, 40, d]} /><meshStandardMaterial map={fabricTex} roughness={0.85} /></mesh>
-          <mesh position={[0, 55, -d / 2 + 8]} castShadow><boxGeometry args={[w, 40, 16]} /><meshStandardMaterial color={dark} roughness={0.85} /></mesh>
-          <mesh position={[-w / 2 + 8, 45, 0]} castShadow><boxGeometry args={[16, 30, d - 16]} /><meshStandardMaterial color={dark} roughness={0.85} /></mesh>
-          <mesh position={[w / 2 - 8, 45, 0]} castShadow><boxGeometry args={[16, 30, d - 16]} /><meshStandardMaterial color={dark} roughness={0.85} /></mesh>
+          {/* Seat base */}
+          <mesh position={[0, 20, 0]} castShadow><boxGeometry args={[w, 20, d]} /><meshStandardMaterial map={fabricTex} roughness={0.9} /></mesh>
+          {/* Tufted seat cushions */}
+          <mesh position={[-w / 4, 33, 5]} castShadow><boxGeometry args={[w / 2 - 2, 10, d - 10]} /><meshStandardMaterial map={fabricTex} roughness={0.8} /></mesh>
+          <mesh position={[w / 4, 33, 5]} castShadow><boxGeometry args={[w / 2 - 2, 10, d - 10]} /><meshStandardMaterial map={fabricTex} roughness={0.8} /></mesh>
+          {/* Backrest */}
+          <mesh position={[0, 55, -d / 2 + 10]} castShadow><boxGeometry args={[w, 40, 20]} /><meshStandardMaterial map={fabricTex} roughness={0.9} /></mesh>
+          {/* Curved armrests */}
+          <mesh position={[-w / 2 + 10, 42, 5]} castShadow rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[10, 10, d - 10, 16]} /><meshStandardMaterial map={fabricTex} roughness={0.9} /></mesh>
+          <mesh position={[w / 2 - 10, 42, 5]} castShadow rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[10, 10, d - 10, 16]} /><meshStandardMaterial map={fabricTex} roughness={0.9} /></mesh>
+          {/* Tapered Legs */}
+          {[-w/2+5, w/2-5].map(lx => [-d/2+5, d/2-5].map(lz => (
+             <mesh key={`${lx}-${lz}`} position={[lx, 5, lz]} castShadow>
+               <cylinderGeometry args={[legTaper > 1 ? 3 : 2.5, legTaper > 1 ? 2 : 1.5, 10, 8]} />
+               {legsAreMetal ? <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.8} /> : <meshStandardMaterial map={woodTex} />}
+             </mesh>
+          )))}
           {showCushions && <>
-            <mesh position={[-w / 4, 46, -d / 4]} rotation={[0, 0.3, 0.1]} castShadow>
-              <boxGeometry args={[26, 10, 26]} /><meshStandardMaterial color={light} roughness={0.9} />
+            <mesh position={[-w / 4, 45, -d / 4]} rotation={[0, 0.3, 0.1]} castShadow>
+              <boxGeometry args={[26, 12, 26]} /><meshStandardMaterial color={light} roughness={0.9} />
             </mesh>
-            <mesh position={[w / 4, 46, -d / 4]} rotation={[0, -0.25, -0.1]} castShadow>
-              <boxGeometry args={[26, 10, 26]} /><meshStandardMaterial color={shade(base, 0.4)} roughness={0.9} />
+            <mesh position={[w / 4, 45, -d / 4]} rotation={[0, -0.25, -0.1]} castShadow>
+              <boxGeometry args={[26, 12, 26]} /><meshStandardMaterial color={shade(base, 0.4)} roughness={0.9} />
             </mesh>
           </>}
         </group>
@@ -466,14 +479,18 @@ function FurnitureMesh({ f }: { f: Furniture }) {
     case 'bed':
       return (
         <group>
-          <mesh position={[0, 15, 0]} castShadow><boxGeometry args={[w, 25, d]} /><meshStandardMaterial map={woodTex} roughness={0.8} /></mesh>
-          <mesh position={[0, 32, 4]} castShadow><boxGeometry args={[w - 6, 14, d - 20]} /><meshStandardMaterial color={base} roughness={0.95} /></mesh>
-          <mesh position={[0, 40, d / 2 - 30]} rotation={[0.05, 0, 0]} castShadow>
-            <boxGeometry args={[w - 10, 8, 34]} /><meshStandardMaterial color={shade(base, -0.15)} roughness={0.95} />
-          </mesh>
-          <mesh position={[0, 42, -d / 2 + 16]} castShadow><boxGeometry args={[w - 16, 10, 24]} /><meshStandardMaterial color={light} roughness={1} /></mesh>
-          <mesh position={[-w / 4, 44, -d / 2 + 16]} rotation={[0, 0, 0.05]} castShadow><boxGeometry args={[w / 2 - 12, 9, 22]} /><meshStandardMaterial color="#ffffff" roughness={1} /></mesh>
-          <mesh position={[0, 65, -d / 2 + 4]} castShadow><boxGeometry args={[w, 60, 8]} /><meshStandardMaterial map={woodTex} roughness={0.65} /></mesh>
+          {/* Frame */}
+          <mesh position={[0, 15, 0]} castShadow><boxGeometry args={[w, 15, d]} /><meshStandardMaterial map={woodTex} roughness={0.8} /></mesh>
+          {/* Mattress */}
+          <mesh position={[0, 30, 4]} castShadow><boxGeometry args={[w - 4, 16, d - 8]} /><meshStandardMaterial color="#f0f0f0" roughness={0.95} /></mesh>
+          {/* Folded Duvet */}
+          <mesh position={[0, 39, d / 6]} castShadow><boxGeometry args={[w - 2, 6, d * 0.6]} /><meshStandardMaterial map={fabricTex} roughness={0.95} /></mesh>
+          <mesh position={[0, 42, -d / 6]} rotation={[0.1, 0, 0]} castShadow><boxGeometry args={[w - 2, 4, d * 0.2]} /><meshStandardMaterial map={fabricTex} roughness={0.95} /></mesh>
+          {/* Pillows */}
+          <mesh position={[-w / 4, 41, -d / 2 + 25]} rotation={[0.1, 0, 0]} castShadow><boxGeometry args={[w * 0.35, 8, 25]} /><meshStandardMaterial color={light} roughness={1} /></mesh>
+          <mesh position={[w / 4, 41, -d / 2 + 25]} rotation={[0.1, 0, 0]} castShadow><boxGeometry args={[w * 0.35, 8, 25]} /><meshStandardMaterial color={light} roughness={1} /></mesh>
+          {/* Padded Headboard */}
+          <mesh position={[0, 55, -d / 2 + 6]} castShadow><boxGeometry args={[w + 10, 70, 12]} /><meshStandardMaterial map={fabricTex} roughness={0.9} /></mesh>
         </group>
       );
 
@@ -506,14 +523,19 @@ function FurnitureMesh({ f }: { f: Furniture }) {
       ];
       return (
         <group>
-          <mesh position={[0, seatH, 0]} castShadow><boxGeometry args={[w, 5, d]} /><meshStandardMaterial color={base} roughness={0.7} /></mesh>
-          <mesh position={[0, seatH + 22, -d / 2 + 3]} castShadow><boxGeometry args={[w, 44, 5]} /><meshStandardMaterial color={base} roughness={0.7} /></mesh>
+          {/* Contoured Seat */}
+          <mesh position={[0, seatH, 0]} castShadow><boxGeometry args={[w, 4, d]} /><meshStandardMaterial color={base} roughness={0.7} /></mesh>
+          {/* Slatted Backrest */}
+          <mesh position={[0, seatH + 22, -d / 2 + 3]} castShadow><boxGeometry args={[w, 5, 4]} /><meshStandardMaterial map={woodTex} roughness={0.7} /></mesh>
+          <mesh position={[0, seatH + 42, -d / 2 + 3]} castShadow><boxGeometry args={[w, 5, 4]} /><meshStandardMaterial map={woodTex} roughness={0.7} /></mesh>
+          <mesh position={[-w/2+4, seatH + 22, -d / 2 + 3]} castShadow><boxGeometry args={[4, 44, 4]} /><meshStandardMaterial map={woodTex} roughness={0.7} /></mesh>
+          <mesh position={[w/2-4, seatH + 22, -d / 2 + 3]} castShadow><boxGeometry args={[4, 44, 4]} /><meshStandardMaterial map={woodTex} roughness={0.7} /></mesh>
           {legs.map(([lx, lz], i) => (
             <mesh key={i} position={[lx, seatH / 2, lz]} castShadow>
-              <cylinderGeometry args={[legR * 0.7, legR, seatH, 8]} />
+              <cylinderGeometry args={[legR * 0.5, legR, seatH, 8]} />
               {legsAreMetal
                 ? <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.8} />
-                : <meshStandardMaterial color={dark} roughness={0.45} metalness={0.05} />}
+                : <meshStandardMaterial map={woodTex} roughness={0.45} metalness={0.05} />}
             </mesh>
           ))}
         </group>
@@ -536,14 +558,18 @@ function FurnitureMesh({ f }: { f: Furniture }) {
     case 'kitchen-counter':
       return (
         <group>
+          {/* Base Cabinets */}
           <mesh position={[0, 42, 0]} castShadow><boxGeometry args={[w, 84, d]} /><meshStandardMaterial map={woodTex} roughness={0.6} /></mesh>
-          <mesh position={[0, 87, 0]} castShadow><boxGeometry args={[w + 4, 6, d + 4]} /><meshStandardMaterial color={light} roughness={0.1} metalness={0.15} /></mesh>
-          {Array.from({ length: Math.max(2, Math.round(w / 60)) }).map((_, i, arr) => (
-            <mesh key={i} position={[-w / 2 + (w / arr.length) * (i + 0.5), 55, d / 2 + 0.6]} castShadow>
-              <boxGeometry args={[10, 1.5, 1.5]} />
-              <meshStandardMaterial color="#c9c9c9" metalness={0.7} roughness={0.3} />
-            </mesh>
-          ))}
+          {/* Countertop */}
+          <mesh position={[0, 86, 0]} castShadow><boxGeometry args={[w + 4, 4, d + 4]} /><meshStandardMaterial color={light} roughness={0.1} metalness={0.3} /></mesh>
+          {/* Sink Cutout */}
+          <mesh position={[-w/4, 87, 0]} castShadow><boxGeometry args={[60, 2, 40]} /><meshStandardMaterial color="#a0a0a0" roughness={0.2} metalness={0.8} /></mesh>
+          <mesh position={[-w/4, 88, 0]} castShadow><cylinderGeometry args={[2, 2, 20, 8]} rotation={[0,0,Math.PI/2]} /><meshStandardMaterial color="#888" metalness={0.9} /></mesh>
+          {/* Cooktop */}
+          <mesh position={[w/4, 88.5, 0]} castShadow><boxGeometry args={[50, 1, 40]} /><meshStandardMaterial color="#111" roughness={0.1} metalness={0.5} /></mesh>
+          {/* Upper Cabinets */}
+          <mesh position={[0, 160, -d/2 + 20]} castShadow><boxGeometry args={[w, 60, 30]} /><meshStandardMaterial map={woodTex} roughness={0.6} /></mesh>
+          <mesh position={[0, 160, -d/2 + 35.5]} castShadow><boxGeometry args={[w - 10, 50, 1]} /><meshStandardMaterial color="#aaddff" roughness={0.1} transparent opacity={0.6} /></mesh>
         </group>
       );
 
@@ -647,10 +673,18 @@ function FurnitureMesh({ f }: { f: Furniture }) {
     case 'tv-console':
       return (
         <group>
+          {/* Console Cabinet */}
           <mesh position={[0, 25, 0]} castShadow><boxGeometry args={[w, 50, d]} /><meshStandardMaterial map={woodTex} roughness={0.5} /></mesh>
           <mesh position={[0, 51, 0]}><boxGeometry args={[w + 2, 2, d + 2]} /><meshStandardMaterial color={light} roughness={0.2} /></mesh>
-          <mesh position={[0, 90, -d / 2 + 3]} castShadow>
-            <boxGeometry args={[w * 0.75, w * 0.42, 4]} /><meshStandardMaterial color="#111" roughness={0.2} metalness={0.3} />
+          {/* TV Stand Base */}
+          <mesh position={[0, 53, 0]} castShadow><boxGeometry args={[30, 2, 16]} /><meshStandardMaterial color="#222" roughness={0.4} metalness={0.6} /></mesh>
+          <mesh position={[0, 56, 0]} castShadow><cylinderGeometry args={[2, 2, 8, 8]} /><meshStandardMaterial color="#111" roughness={0.4} metalness={0.6} /></mesh>
+          {/* TV Screen */}
+          <mesh position={[0, 85, 0]} castShadow>
+            <boxGeometry args={[w * 0.85, w * 0.48, 4]} /><meshStandardMaterial color="#111" roughness={0.2} metalness={0.8} />
+          </mesh>
+          <mesh position={[0, 85, 2.1]}>
+            <boxGeometry args={[w * 0.83, w * 0.46, 0.1]} /><meshStandardMaterial color="#050505" roughness={0.1} metalness={0.9} />
           </mesh>
         </group>
       );
@@ -781,6 +815,27 @@ function RoomFloor({ room }: { room: Room }) {
   );
 }
 
+function RoomCeiling({ room, wallHeight }: { room: Room; wallHeight: number }) {
+  if (room.points.length < 3) return null;
+  const matDef = WALL_MATERIALS[room.ceilingMaterial ?? 'white-paint'] ?? WALL_MATERIALS['white-paint'];
+
+  const shape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(room.points[0].x, room.points[0].y);
+    for (let i = 1; i < room.points.length; i++) s.lineTo(room.points[i].x, room.points[i].y);
+    return s;
+  }, [room.points]);
+
+  return (
+    <group rotation={[Math.PI / 2, 0, 0]} position={[0, wallHeight, 0]}>
+      <mesh receiveShadow castShadow>
+        <extrudeGeometry args={[shape, { depth: 4, bevelEnabled: false }]} />
+        <meshStandardMaterial color={matDef.color} roughness={matDef.roughness} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
 function RoomCeilingLight({ room, wallHeight }: { room: Room; wallHeight: number }) {
   const cx = room.points.reduce((s, p) => s + p.x, 0) / room.points.length;
   const cy = room.points.reduce((s, p) => s + p.y, 0) / room.points.length;
@@ -806,7 +861,7 @@ function AutoRug({ f }: { f: Furniture }) {
 }
 
 function SceneContent() {
-  const { walls, rooms, doors, windows, furniture, cameraMode, showCeilingLights } = usePlannerStore();
+  const { walls, rooms, doors, windows, furniture, cameraMode, showCeilingLights, sunTime } = usePlannerStore();
   const { camera } = useThree();
 
   useEffect(() => {
@@ -825,13 +880,24 @@ function SceneContent() {
     }
   }, [cameraMode, camera]);
 
+  const sunAngle = ((sunTime - 6) / 12) * Math.PI;
+  const isDay = sunTime >= 6 && sunTime <= 18;
+  const sunPos: [number, number, number] = [
+    2000 * Math.cos(sunAngle),
+    2000 * Math.sin(sunAngle) + 500, // keep it slightly elevated
+    1000
+  ];
+  const sunIntensity = isDay ? Math.sin(sunAngle) * 2 : 0;
+
+  const avgH = walls.length > 0 ? walls.reduce((s, w) => s + w.height, 0) / walls.length : 270;
+
   return (
     <>
-      <hemisphereLight args={['#cfe8ff', '#4a3c2c', 0.55]} />
-      <ambientLight intensity={0.22} />
+      <hemisphereLight args={['#cfe8ff', '#4a3c2c', isDay ? 0.55 : 0.1]} />
+      <ambientLight intensity={isDay ? 0.22 : 0.05} />
       <directionalLight
-        position={[1000, 2000, 1000]}
-        intensity={1.5}
+        position={sunPos}
+        intensity={sunIntensity}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-far={5000}
@@ -842,11 +908,16 @@ function SceneContent() {
         shadow-bias={-0.0004}
         shadow-radius={4}
       />
-      <directionalLight position={[-900, 700, -600]} intensity={0.35} color="#bcd4ff" />
-      <directionalLight position={[0, -200, 0]} intensity={0.08} color="#e8c9a0" />
-      <Environment preset="apartment" />
+      <directionalLight position={[-900, 700, -600]} intensity={isDay ? 0.35 : 0.05} color="#bcd4ff" />
+      <directionalLight position={[0, -200, 0]} intensity={isDay ? 0.08 : 0.02} color="#e8c9a0" />
+      <hemisphereLight args={['#b1e1ff', '#b97a20', 0.6]} />
 
-      {rooms.map((room) => <RoomFloor key={room.id} room={room} />)}
+      {rooms.map((room) => (
+        <group key={room.id}>
+            <RoomFloor room={room} />
+            {(cameraMode === 'orbit' || cameraMode === 'firstperson') && <RoomCeiling room={room} wallHeight={avgH} />}
+        </group>
+      ))}
 
       {walls.map((wall) => (
         <Wall3D key={wall.id} wall={wall} doors={doors} windows={windows} />
