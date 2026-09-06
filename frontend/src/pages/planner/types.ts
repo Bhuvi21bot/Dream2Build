@@ -4,7 +4,19 @@ export type RoomType = 'bedroom' | 'kitchen' | 'living' | 'bathroom' | 'balcony'
 export type WallMaterial = 'white-paint' | 'concrete' | 'brick' | 'wood-panel'
 export type FloorMaterial = 'hardwood' | 'tiles' | 'marble' | 'carpet' | 'concrete'
 export type DoorMaterial = 'wood' | 'glass' | 'metal'
-export type FurnitureType = 'sofa' | 'bed' | 'dining-table' | 'chair' | 'desk' | 'wardrobe' | 'kitchen-counter' | 'toilet' | 'bathtub' | 'stairs' | 'armchair' | 'loveseat' | 'bench' | 'ottoman' | 'nightstand' | 'bookshelf' | 'tv-console' | 'cabinet' | 'plant' | 'lamp' | 'mirror' | 'outdoor-tree' | 'fence';
+export type FurnitureStyle = 'modern' | 'classic' | 'minimalist' | 'rustic'
+export type FurnitureCategory = 'seating' | 'sleeping' | 'tables' | 'storage' | 'kitchen' | 'bathroom' | 'decor' | 'outdoor' | 'structural'
+
+export type FurnitureType =
+  | 'sofa' | 'armchair' | 'loveseat' | 'bench' | 'ottoman' | 'chair'
+  | 'bed' | 'nightstand'
+  | 'dining-table' | 'desk'
+  | 'wardrobe' | 'bookshelf' | 'tv-console' | 'cabinet'
+  | 'kitchen-counter'
+  | 'toilet' | 'bathtub'
+  | 'plant' | 'lamp' | 'mirror'
+  | 'outdoor-tree' | 'fence'
+  | 'stairs'
 
 export type Wall = {
   id: string
@@ -13,6 +25,7 @@ export type Wall = {
   thickness: number
   height: number
   material: WallMaterial
+  paintColor?: string
 }
 
 export type Room = {
@@ -29,7 +42,7 @@ export type Room = {
 export type Door = {
   id: string
   wallId: string
-  position: number // 0-1 along the wall
+  position: number
   width: number
   swingDirection: 'left' | 'right'
   material: DoorMaterial
@@ -38,10 +51,12 @@ export type Door = {
 export type Window = {
   id: string
   wallId: string
-  position: number // 0-1 along wall
+  position: number
   width: number
   height: number
   sillHeight: number
+  curtains?: boolean
+  curtainColor?: string
 }
 
 export type Furniture = {
@@ -53,11 +68,11 @@ export type Furniture = {
   width: number
   depth: number
   color: string
+  style?: FurnitureStyle
 }
 
 export type Tool = 'select' | 'wall' | 'room' | 'polygon-room' | 'door' | 'window' | 'furniture' | 'stairs' | 'delete'
 
-// A snapshot of mutable state for undo/redo
 export type HistorySnapshot = {
   walls: Wall[]
   rooms: Room[]
@@ -75,25 +90,24 @@ export type FloorPlanState = {
   selectedId: string | null
   activeTool: Tool
   selectedFurnitureType: FurnitureType
+  selectedFurnitureStyle: FurnitureStyle
   selectedRoomType: RoomType
   selectedRoomShape: 'square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal'
   gridSize: number
   snapToGrid: boolean
   showGrid: boolean
-  scale: number // px per cm
+  showCeilingLights: boolean
+  scale: number
   view: 'split' | '2d' | '3d'
   cameraMode: 'orbit' | 'firstperson' | 'top' | 'dollhouse'
-
-  // Polygon room in-progress vertices
   polygonPoints: Point[]
-
-  // Undo/Redo history
   history: HistorySnapshot[]
   historyIndex: number
   canUndo: boolean
   canRedo: boolean
 
   setSelectedFurnitureType: (type: FurnitureType) => void
+  setSelectedFurnitureStyle: (style: FurnitureStyle) => void
   setSelectedRoomType: (type: RoomType) => void
   setSelectedRoomShape: (shape: 'square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal') => void
 
@@ -123,14 +137,13 @@ export type FloorPlanState = {
   setCameraMode: (mode: 'orbit' | 'firstperson' | 'top' | 'dollhouse') => void
   toggleGrid: () => void
   toggleSnap: () => void
+  toggleCeilingLights: () => void
   setScale: (scale: number) => void
 
-  // Polygon room drawing
   addPolygonPoint: (pt: Point) => void
   closePolygon: () => void
   cancelPolygon: () => void
 
-  // History
   undo: () => void
   redo: () => void
   pushHistory: () => void
