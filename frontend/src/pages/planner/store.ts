@@ -352,6 +352,6 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
       ];
     }
 
-    set({ walls, rooms, doors, windows, furniture, scale: 1, polygonPoints: [], history: [], historyIndex: -1, canUndo: false, canRedo: false });
+    set({ walls, rooms, doors, windows, furniture, scale: 1, polygonPoints: [] });
   }
 }));
