@@ -34,6 +34,7 @@ export type Room = {
   type: RoomType
   points: Point[]
   floorMaterial: FloorMaterial
+  ceilingMaterial?: WallMaterial
   color: string
   textureScale?: number
   textureRotation?: number
@@ -67,8 +68,10 @@ export type Furniture = {
   rotation: number
   width: number
   depth: number
+  height?: number
   color: string
   style?: FurnitureStyle
+  variant?: string
 }
 
 export type Tool = 'select' | 'wall' | 'room' | 'polygon-room' | 'door' | 'window' | 'furniture' | 'stairs' | 'delete'
@@ -88,6 +91,8 @@ export type FloorPlanState = {
   windows: Window[]
   furniture: Furniture[]
   selectedId: string | null
+  selectedIds: string[]
+  clipboard: any[]
   activeTool: Tool
   selectedFurnitureType: FurnitureType
   selectedFurnitureStyle: FurnitureStyle
@@ -97,6 +102,7 @@ export type FloorPlanState = {
   snapToGrid: boolean
   showGrid: boolean
   showCeilingLights: boolean
+  sunTime: number
   scale: number
   view: 'split' | '2d' | '3d'
   cameraMode: 'orbit' | 'firstperson' | 'top' | 'dollhouse'
@@ -133,12 +139,19 @@ export type FloorPlanState = {
 
   setActiveTool: (tool: Tool) => void
   setSelectedId: (id: string | null) => void
+  setSelectedIds: (ids: string[]) => void
+  setClipboard: (items: any[]) => void
+  setGridSize: (size: number) => void
+  setSnapToGrid: (snap: boolean) => void
+  setShowGrid: (show: boolean) => void
+  setShowCeilingLights: (show: boolean) => void
+  setSunTime: (time: number) => void
+  setScale: (scale: number) => void
   setView: (view: 'split' | '2d' | '3d') => void
   setCameraMode: (mode: 'orbit' | 'firstperson' | 'top' | 'dollhouse') => void
   toggleGrid: () => void
   toggleSnap: () => void
   toggleCeilingLights: () => void
-  setScale: (scale: number) => void
 
   addPolygonPoint: (pt: Point) => void
   closePolygon: () => void

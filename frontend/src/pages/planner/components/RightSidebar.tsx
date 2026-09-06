@@ -13,7 +13,7 @@ export function RightSidebar() {
   const {
     selectedId, walls, rooms, doors, windows, furniture,
     updateWall, updateRoom, updateDoor, updateWindow, updateFurniture,
-    view, cameraMode, setCameraMode
+    view, cameraMode, setCameraMode, sunTime, setSunTime
   } = usePlannerStore();
 
   const getSelectedElement = () => {
@@ -107,6 +107,25 @@ export function RightSidebar() {
             </div>
           </div>
 
+          <Separator className="bg-border" />
+
+          {/* Environment Controls */}
+          <div className="flex flex-col gap-4">
+            <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-wider">Environment</h3>
+
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-foreground/70">Time of Day</Label>
+                <span className="text-xs font-mono text-amber-500">{sunTime}:00</span>
+              </div>
+              <Slider 
+                value={[sunTime]} 
+                min={0} max={24} step={1} 
+                onValueChange={([v]) => setSunTime(v)} 
+              />
+            </div>
+          </div>
+
           {(view === '3d' || view === 'split') && (
             <>
               <Separator className="bg-border" />
@@ -193,7 +212,12 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Thickness</Label>
-          <span className="text-xs font-mono text-amber-500">{wall.thickness} cm</span>
+          <Input 
+            type="number" 
+            className="w-16 h-7 text-xs font-mono bg-background border-border" 
+            value={wall.thickness} 
+            onChange={(e) => updateWall(wall.id, { thickness: parseFloat(e.target.value) || 5 })} 
+          />
         </div>
         <Slider value={[wall.thickness]} min={5} max={50} step={1} onValueChange={([v]) => updateWall(wall.id, { thickness: v })} />
       </div>
@@ -201,7 +225,12 @@ function WallProperties({ wall, updateWall }: { wall: Wall, updateWall: any }) {
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Height</Label>
-          <span className="text-xs font-mono text-amber-500">{wall.height} cm</span>
+          <Input 
+            type="number" 
+            className="w-16 h-7 text-xs font-mono bg-background border-border" 
+            value={wall.height} 
+            onChange={(e) => updateWall(wall.id, { height: parseFloat(e.target.value) || 100 })} 
+          />
         </div>
         <Slider value={[wall.height]} min={100} max={400} step={10} onValueChange={([v]) => updateWall(wall.id, { height: v })} />
       </div>
@@ -401,25 +430,44 @@ function FurnitureProperties({ item, updateFurniture }: { item: Furniture, updat
       </div>
 
       <div className="grid gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs text-foreground/70">X Pos</Label>
+            <Input type="number" className="h-7 text-xs font-mono bg-background" value={Math.round(item.position.x)} onChange={(e) => updateFurniture(item.id, { position: { ...item.position, x: parseFloat(e.target.value) || 0 } })} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs text-foreground/70">Y Pos</Label>
+            <Input type="number" className="h-7 text-xs font-mono bg-background" value={Math.round(item.position.y)} onChange={(e) => updateFurniture(item.id, { position: { ...item.position, y: parseFloat(e.target.value) || 0 } })} />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <Label className="text-xs text-foreground/70">Rotation</Label>
-          <span className="text-xs font-mono text-amber-500">{item.rotation}°</span>
+          <Input type="number" className="w-16 h-7 text-xs font-mono bg-background" value={item.rotation} onChange={(e) => updateFurniture(item.id, { rotation: parseFloat(e.target.value) || 0 })} />
         </div>
         <Slider value={[item.rotation]} min={0} max={360} step={15} onValueChange={([v]) => updateFurniture(item.id, { rotation: v })} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-foreground/70">Width</Label>
-          <span className="text-xs font-mono text-amber-500">{item.width} cm</span>
+          <Label className="text-xs text-foreground/70">Width (cm)</Label>
+          <Input type="number" className="w-16 h-7 text-xs font-mono bg-background" value={item.width} onChange={(e) => updateFurniture(item.id, { width: parseFloat(e.target.value) || 30 })} />
         </div>
         <Slider value={[item.width]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { width: v })} />
       </div>
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-foreground/70">Depth</Label>
-          <span className="text-xs font-mono text-amber-500">{item.depth} cm</span>
+          <Label className="text-xs text-foreground/70">Depth (cm)</Label>
+          <Input type="number" className="w-16 h-7 text-xs font-mono bg-background" value={item.depth} onChange={(e) => updateFurniture(item.id, { depth: parseFloat(e.target.value) || 30 })} />
         </div>
         <Slider value={[item.depth]} min={30} max={400} step={5} onValueChange={([v]) => updateFurniture(item.id, { depth: v })} />
+      </div>
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-foreground/70">Height (cm)</Label>
+          <Input type="number" className="w-16 h-7 text-xs font-mono bg-background" value={item.height ?? 100} onChange={(e) => updateFurniture(item.id, { height: parseFloat(e.target.value) || 30 })} />
+        </div>
       </div>
     </div>
   );

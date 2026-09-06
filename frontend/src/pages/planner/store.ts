@@ -23,6 +23,8 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   windows: [],
   furniture: [],
   selectedId: null,
+  selectedIds: [],
+  clipboard: [],
   activeTool: 'select',
   selectedFurnitureType: 'sofa',
   selectedFurnitureStyle: 'modern',
@@ -32,6 +34,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   snapToGrid: true,
   showGrid: true,
   showCeilingLights: true,
+  sunTime: 12,
   scale: 1,
   view: '2d',
   cameraMode: 'orbit',
@@ -84,7 +87,39 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   addWall: (wall) => set((state) => {
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
-    return { walls: [...state.walls, wall], history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+    
+    const walls = [...state.walls];
+    const { end } = wall;
+    let splitWallIdx = -1;
+    let splitPt: Point | null = null;
+
+    // T-junction merge logic
+    for (let i = 0; i < walls.length; i++) {
+        const w = walls[i];
+        const dx = w.end.x - w.start.x, dy = w.end.y - w.start.y;
+        const len2 = dx * dx + dy * dy;
+        if (len2 === 0) continue;
+        const t = Math.max(0, Math.min(1, ((end.x - w.start.x) * dx + (end.y - w.start.y) * dy) / len2));
+        if (t > 0.05 && t < 0.95) { // not too close to ends
+            const pt = { x: w.start.x + t * dx, y: w.start.y + t * dy };
+            if (Math.hypot(end.x - pt.x, end.y - pt.y) < w.thickness / 2 + 5) {
+                splitWallIdx = i;
+                splitPt = pt;
+                break;
+            }
+        }
+    }
+
+    if (splitWallIdx >= 0 && splitPt) {
+        const orig = walls[splitWallIdx];
+        const w1 = { ...orig, id: orig.id + '_a', end: splitPt };
+        const w2 = { ...orig, id: orig.id + '_b', start: splitPt };
+        walls.splice(splitWallIdx, 1, w1, w2);
+        wall.end = splitPt;
+    }
+
+    walls.push(wall);
+    return { walls, history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
   updateWall: (id, wall, saveHistory) => set((state) => {
     if (saveHistory) {
@@ -102,6 +137,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
       doors: state.doors.filter(d => d.wallId !== id),
       windows: state.windows.filter(w => w.wallId !== id),
       selectedId: state.selectedId === id ? null : state.selectedId,
+      selectedIds: state.selectedIds.filter(selId => selId !== id),
       history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false,
     };
   }),
@@ -125,6 +161,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     return {
       rooms: state.rooms.filter(r => r.id !== id),
       selectedId: state.selectedId === id ? null : state.selectedId,
+      selectedIds: state.selectedIds.filter(selId => selId !== id),
       history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false,
     };
   }),
@@ -148,6 +185,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     return {
       doors: state.doors.filter(d => d.id !== id),
       selectedId: state.selectedId === id ? null : state.selectedId,
+      selectedIds: state.selectedIds.filter(selId => selId !== id),
       history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false,
     };
   }),
@@ -171,6 +209,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     return {
       windows: state.windows.filter(w => w.id !== id),
       selectedId: state.selectedId === id ? null : state.selectedId,
+      selectedIds: state.selectedIds.filter(selId => selId !== id),
       history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false,
     };
   }),
@@ -194,17 +233,21 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     return {
       furniture: state.furniture.filter(f => f.id !== id),
       selectedId: state.selectedId === id ? null : state.selectedId,
+      selectedIds: state.selectedIds.filter(selId => selId !== id),
       history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false,
     };
   }),
 
-  setActiveTool: (tool) => set({ activeTool: tool, selectedId: null, polygonPoints: [] }),
-  setSelectedId: (id) => set({ selectedId: id, activeTool: 'select' }),
+  setActiveTool: (tool) => set({ activeTool: tool, selectedId: null, selectedIds: [], polygonPoints: [] }),
+  setSelectedId: (id) => set({ selectedId: id, selectedIds: id ? [id] : [], activeTool: 'select' }),
+  setSelectedIds: (ids) => set({ selectedIds: ids, selectedId: ids.length === 1 ? ids[0] : null, activeTool: 'select' }),
+  setClipboard: (items) => set({ clipboard: items }),
   setView: (view) => set({ view }),
   setCameraMode: (mode) => set({ cameraMode: mode }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleSnap: () => set((state) => ({ snapToGrid: !state.snapToGrid })),
   toggleCeilingLights: () => set((state) => ({ showCeilingLights: !state.showCeilingLights })),
+  setSunTime: (time) => set({ sunTime: time }),
   setScale: (scale) => set({ scale }),
 
   // Polygon room drawing
@@ -238,7 +281,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   }),
   cancelPolygon: () => set({ polygonPoints: [], activeTool: 'select' }),
 
-  clearAll: () => set({ walls: [], rooms: [], doors: [], windows: [], furniture: [], selectedId: null, polygonPoints: [], history: [], historyIndex: -1, canUndo: false, canRedo: false }),
+  clearAll: () => set({ walls: [], rooms: [], doors: [], windows: [], furniture: [], selectedId: null, selectedIds: [], clipboard: [], polygonPoints: [], history: [], historyIndex: -1, canUndo: false, canRedo: false }),
 
   loadSamplePlan: (templateId?: string) => {
     const originX = 100;
