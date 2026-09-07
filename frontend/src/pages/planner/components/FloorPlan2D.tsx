@@ -219,9 +219,8 @@ export function FloorPlan2D() {
   storeRef.current = store;
 
   // ── room shape (for the 'room' drag-draw tool) ────────────────────────────
-  const [roomShape, setRoomShape] = useState<RoomShape>('rect');
-  const roomShapeRef = useRef(roomShape);
-  roomShapeRef.current = roomShape;
+  const roomShapeRef = useRef(store.selectedRoomShape);
+  roomShapeRef.current = store.selectedRoomShape;
 
   // ── export / import ────────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null);
