@@ -219,12 +219,12 @@ function wallTextureFor(def: WallMatDef): THREE.CanvasTexture | null {
 }
 
 // ─── Floor tile grid overlay (fine reference lines on top of the texture) ─────
-function FloorGrid({ xs, ys, spacing, color }: { xs: number; ys: number; spacing: number; color: string }) {
+function FloorGrid({ xs, ys, w, h, spacing, color }: { xs: number; ys: number; w: number; h: number; spacing: number; color: string }) {
   const points: THREE.Vector3[] = [];
   const xMin = Math.floor(xs / spacing) * spacing;
-  const xMax = Math.ceil((xs + 1200) / spacing) * spacing;
+  const xMax = Math.ceil((xs + Math.max(1200, w + 200)) / spacing) * spacing;
   const yMin = Math.floor(ys / spacing) * spacing;
-  const yMax = Math.ceil((ys + 1200) / spacing) * spacing;
+  const yMax = Math.ceil((ys + Math.max(1200, h + 200)) / spacing) * spacing;
 
   for (let x = xMin; x <= xMax; x += spacing) {
     points.push(new THREE.Vector3(x, 0.15, yMin), new THREE.Vector3(x, 0.15, yMax));
@@ -815,24 +815,32 @@ function RoomFloor({ room }: { room: Room }) {
 
   const shape = useMemo(() => {
     const s = new THREE.Shape();
-    s.moveTo(room.points[0].x, room.points[0].y);
-    for (let i = 1; i < room.points.length; i++) s.lineTo(room.points[i].x, room.points[i].y);
+    if (room.points.length > 0) {
+      s.moveTo(room.points[0].x, -room.points[0].y);
+      for (let i = 1; i < room.points.length; i++) {
+        s.lineTo(room.points[i].x, -room.points[i].y);
+      }
+    }
     return s;
   }, [room.points]);
 
   const xs = Math.min(...room.points.map(p => p.x));
   const ys = Math.min(...room.points.map(p => p.y));
+  const xMax = Math.max(...room.points.map(p => p.x));
+  const yMax = Math.max(...room.points.map(p => p.y));
+  const w = xMax - xs;
+  const h = yMax - ys;
 
   return (
     <group>
-      <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]}>
+      <group rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <mesh receiveShadow castShadow>
           <extrudeGeometry args={[shape, { depth: 8, bevelEnabled: false }]} />
           <meshStandardMaterial map={tex} roughness={matDef.roughness} metalness={matDef.metalness} />
         </mesh>
       </group>
       {matDef.gridColor && matDef.gridSpacing && (
-        <FloorGrid xs={xs} ys={ys} spacing={matDef.gridSpacing} color={matDef.gridColor} />
+        <FloorGrid xs={xs} ys={ys} w={w} h={h} spacing={matDef.gridSpacing} color={matDef.gridColor} />
       )}
     </group>
   );
