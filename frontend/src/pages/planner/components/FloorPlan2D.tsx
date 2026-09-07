@@ -1092,6 +1092,20 @@ export function FloorPlan2D() {
           points,
           floorMaterial: 'hardwood', color: clr.fill
         });
+        
+        // Automatically create walls for the room
+        for (let i = 0; i < points.length; i++) {
+          const start = points[i];
+          const end = points[(i + 1) % points.length];
+          addWall({
+            id: 'w_' + Math.random().toString(36).slice(2),
+            start: { ...start },
+            end: { ...end },
+            thickness: WALL_T,
+            height: 280,
+            material: 'white-paint'
+          });
+        }
       }
     }
 

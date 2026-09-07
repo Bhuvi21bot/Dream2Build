@@ -436,8 +436,31 @@ function FurnitureMesh({ f }: { f: Furniture }) {
   const light = shade(base, 0.25);
   const { width: w, depth: d, type } = f;
   const style: FurnitureStyle = f.style ?? 'modern';
-  const woodTex = useMemo(() => makeWoodTexture(shade(base, -0.2)), [base]);
-  const fabricTex = useMemo(() => makeCarpetTexture(base), [base]);
+
+  // Apply distinct styling based on furniture style
+  let woodColor = shade(base, -0.2);
+  let fabricColor = base;
+  let fabricRoughness = 0.9;
+  
+  if (style === 'classic') {
+    woodColor = '#4a2c1b'; // Dark rich mahogany/cherry wood
+    fabricColor = shade(base, -0.15); // Richer fabric tone
+    fabricRoughness = 0.7; // Slightly glossy silk/velvet feel
+  } else if (style === 'minimalist') {
+    woodColor = '#f5f5f5'; // Painted white/light ash
+    fabricColor = shade(base, 0.3); // Muted light tone
+    fabricRoughness = 0.95; // Matte finish
+  } else if (style === 'rustic') {
+    woodColor = '#5c4033'; // Warm worn oak/walnut
+    fabricColor = shade(base, 0.1); // Natural tone
+    fabricRoughness = 0.95;
+  } else { // modern
+    woodColor = shade(base, -0.1);
+    fabricRoughness = 0.85;
+  }
+
+  const woodTex = useMemo(() => makeWoodTexture(woodColor), [woodColor]);
+  const fabricTex = useMemo(() => makeCarpetTexture(fabricColor), [fabricColor]);
 
   // Style-driven geometry knobs
   const legTaper = style === 'rustic' ? 1.3 : style === 'minimalist' ? 0.6 : 1;
