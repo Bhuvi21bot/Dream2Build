@@ -1,7 +1,13 @@
 {
   "dependencies": {
     "better-auth": "^1.7.0",
+    "cmdk": "^1.1.1",
     "cors": "^2.8.6",
-    "mysql2": "^3.23.3"
+    "lucide-react": "^1.45.0",
+    "motion": "^13.2.0",
+    "mysql2": "^3.23.3",
+    "recharts": "^3.10.1",
+    "sonner": "^2.0.8",
+    "vaul": "^1.1.2"
   }
 }
