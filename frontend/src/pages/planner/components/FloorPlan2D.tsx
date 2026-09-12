@@ -18,7 +18,7 @@
  */
 
 import { useRef, useEffect, useCallback, useState } from 'react';
-import { usePlannerStore } from '../store';
+import { generateId } from '../idGenerator';
 import { Point, Wall, Room, Furniture, FurnitureType, RoomType } from '../types';
 
 // close-enough distance to consider polygon closed (world px)
@@ -686,7 +686,7 @@ export function FloorPlan2D() {
             const { clipboard, addFurniture } = storeRef.current;
             const pastedIds: string[] = [];
             clipboard.forEach((f: Furniture) => {
-                const newId = 'f_' + Math.random().toString(36).slice(2);
+                const newId = generateId('f_');
                 addFurniture({ ...f, id: newId, position: { x: f.position.x + 20, y: f.position.y + 20 } });
                 pastedIds.push(newId);
             });
@@ -883,7 +883,7 @@ export function FloorPlan2D() {
     if (activeTool === 'furniture') {
       const cfg = FURNITURE_CFG[selectedFurnitureType];
       addFurniture({
-        id: 'f_' + Math.random().toString(36).slice(2), type: selectedFurnitureType,
+        id: generateId('f_'), type: selectedFurnitureType,
         position: sp, rotation: 0, width: cfg.w, depth: cfg.d, color: cfg.fill,
         style: storeRef.current.selectedFurnitureStyle,
       });
@@ -893,8 +893,8 @@ export function FloorPlan2D() {
     if (activeTool === 'door' || activeTool === 'window') {
       const best = bestWallSnap(world);
       if (best && best.d < SNAP_DIST) {
-        if (activeTool === 'door') addDoor({ id: 'd_' + Math.random().toString(36).slice(2), wallId: best.wall.id, position: best.t, width: 90, swingDirection: 'left', material: 'wood' });
-        else addWindow({ id: 'w_' + Math.random().toString(36).slice(2), wallId: best.wall.id, position: best.t, width: 120, height: 150, sillHeight: 90 });
+        if (activeTool === 'door') addDoor({ id: generateId('d_'), wallId: best.wall.id, position: best.t, width: 90, swingDirection: 'left', material: 'wood' });
+        else addWindow({ id: generateId('w_'), wallId: best.wall.id, position: best.t, width: 120, height: 150, sillHeight: 90 });
       }
       return;
     }
@@ -1075,7 +1075,7 @@ export function FloorPlan2D() {
       const endPt = snapWallPoint(world);
       if (dist(drag.start, endPt) > 10) {
         addWall({
-          id: 'w_' + Math.random().toString(36).slice(2), start: drag.start, end: endPt,
+          id: generateId('w_'), start: drag.start, end: endPt,
           thickness: WALL_T, height: 280, material: 'white-paint'
         });
       }
@@ -1086,7 +1086,7 @@ export function FloorPlan2D() {
         const clr = ROOM_COLORS[selectedRoomType] ?? ROOM_COLORS.living;
         const points = getPointsForShape(roomShapeRef.current, drag.start, sp);
         addRoom({
-          id: 'r_' + Math.random().toString(36).slice(2),
+          id: generateId('r_'),
           name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
           type: selectedRoomType,
           points,
@@ -1098,7 +1098,7 @@ export function FloorPlan2D() {
           const start = points[i];
           const end = points[(i + 1) % points.length];
           addWall({
-            id: 'w_' + Math.random().toString(36).slice(2),
+            id: generateId('w_'),
             start: { ...start },
             end: { ...end },
             thickness: WALL_T,
@@ -1194,7 +1194,7 @@ export function FloorPlan2D() {
             const cfg = FURNITURE_CFG[type as any];
             if (cfg) {
                 addFurniture({
-                    id: 'f_' + Math.random().toString(36).slice(2),
+                    id: generateId('f_'),
                     type: type as any,
                     position: snapP(world),
                     rotation: 0,
