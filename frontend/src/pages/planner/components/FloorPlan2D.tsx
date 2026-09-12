@@ -18,6 +18,7 @@
  */
 
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { usePlannerStore } from '../store';
 import { generateId } from '../idGenerator';
 import { Point, Wall, Room, Furniture, FurnitureType, RoomType } from '../types';
 
