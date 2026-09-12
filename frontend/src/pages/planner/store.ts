@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { FloorPlanState, HistorySnapshot, Wall, Room, Door, Window, Furniture, Point } from './types';
 
-// Simple ID generator
-const generateId = () => Math.random().toString(36).substring(2, 9);
+import { generateId } from './idGenerator';
 
 const HISTORY_LIMIT = 50;
 
@@ -265,7 +264,7 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     const snap = snapshot(state);
     const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
     const newRoom: Room = {
-      id: 'r_' + Math.random().toString(36).slice(2),
+      id: generateId('r_'),
       name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
       type: selectedRoomType,
       points: pts.map(p => ({ ...p })),
