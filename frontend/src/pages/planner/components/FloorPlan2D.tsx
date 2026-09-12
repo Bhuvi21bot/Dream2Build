@@ -706,8 +706,8 @@ export function FloorPlan2D() {
     };
   }, []);
 
-  // ── mouse helpers ──────────────────────────────────────────────────────────
-  const getXY = (e: React.MouseEvent) => {
+  // ── mouse/pointer helpers ──────────────────────────────────────────────────────────
+  const getXY = (e: React.MouseEvent | React.PointerEvent) => {
     const r = canvasRef.current!.getBoundingClientRect();
     return { sx: e.clientX - r.left, sy: e.clientY - r.top };
   };
@@ -854,7 +854,7 @@ export function FloorPlan2D() {
 
   // ── pointer down ─────────────────────────────────────────────────────────────
   const onPointerDown = useCallback((e: React.PointerEvent) => {
-    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    try { (e.currentTarget as Element).setPointerCapture(e.pointerId); } catch {}
     e.preventDefault();
     const { sx, sy } = getXY(e);
     const world = toWorld(sx, sy);
