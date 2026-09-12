@@ -76,6 +76,8 @@ export type Furniture = {
 
 export type Tool = 'select' | 'wall' | 'room' | 'polygon-room' | 'door' | 'window' | 'furniture' | 'stairs' | 'delete'
 
+export type ClipboardItem = Wall | Room | Door | Window | Furniture
+
 export type HistorySnapshot = {
   walls: Wall[]
   rooms: Room[]
@@ -92,7 +94,7 @@ export type FloorPlanState = {
   furniture: Furniture[]
   selectedId: string | null
   selectedIds: string[]
-  clipboard: any[]
+  clipboard: ClipboardItem[]
   activeTool: Tool
   selectedFurnitureType: FurnitureType
   selectedFurnitureStyle: FurnitureStyle
@@ -140,7 +142,7 @@ export type FloorPlanState = {
   setActiveTool: (tool: Tool) => void
   setSelectedId: (id: string | null) => void
   setSelectedIds: (ids: string[]) => void
-  setClipboard: (items: any[]) => void
+  setClipboard: (items: ClipboardItem[]) => void
   setGridSize: (size: number) => void
   setSnapToGrid: (snap: boolean) => void
   setShowGrid: (show: boolean) => void

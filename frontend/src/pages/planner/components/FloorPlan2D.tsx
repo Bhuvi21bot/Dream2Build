@@ -20,6 +20,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { usePlannerStore } from '../store';
 import { generateId } from '../idGenerator';
+import { validateProjectData } from '../validation';
 import { Point, Wall, Room, Furniture, FurnitureType, RoomType } from '../types';
 
 // close-enough distance to consider polygon closed (world px)
@@ -851,8 +852,9 @@ export function FloorPlan2D() {
     }
   }, [toWorld]);
 
-  // ── mouse down ─────────────────────────────────────────────────────────────
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
+  // ── pointer down ─────────────────────────────────────────────────────────────
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
     e.preventDefault();
     const { sx, sy } = getXY(e);
     const world = toWorld(sx, sy);
@@ -961,8 +963,8 @@ export function FloorPlan2D() {
     dragRef.current = { kind: 'pan', vx0: vx, vy0: vy, sx0: sx, sy0: sy };
   }, [toWorld]);
 
-  // ── mouse move ─────────────────────────────────────────────────────────────
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
+  // ── pointer move ─────────────────────────────────────────────────────────────
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
     const { sx, sy } = getXY(e);
     const world = toWorld(sx, sy);
     mouseRef.current = world;
@@ -1051,8 +1053,9 @@ export function FloorPlan2D() {
     }
   }, [toWorld]);
 
-  // ── mouse up ───────────────────────────────────────────────────────────────
-  const onMouseUp = useCallback((e: React.MouseEvent) => {
+  // ── pointer up ───────────────────────────────────────────────────────────────
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    try { (e.currentTarget as Element).releasePointerCapture(e.pointerId); } catch {}
     const { sx, sy } = getXY(e);
     const world = toWorld(sx, sy);
     const sp = snapP(world);
@@ -1137,10 +1140,9 @@ export function FloorPlan2D() {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const data = JSON.parse(reader.result as string);
-        if (!data || !Array.isArray(data.walls) || !Array.isArray(data.rooms)) {
-          throw new Error('missing walls/rooms arrays');
-        }
+        const rawData = JSON.parse(reader.result as string);
+        const projectData = rawData.version && rawData.walls ? rawData : (rawData.project || rawData);
+        const validData = validateProjectData(projectData);
         const s = storeRef.current;
         // clear current plan (walls last, since doors/windows reference wallId)
         [...s.furniture].forEach(f => s.deleteFurniture(f.id));
@@ -1149,15 +1151,15 @@ export function FloorPlan2D() {
         [...s.rooms].forEach(r => s.deleteRoom(r.id));
         [...s.walls].forEach(w => s.deleteWall(w.id));
         // re-add from file (walls first so door/window wallId refs resolve)
-        (data.walls as Wall[]).forEach(w => s.addWall(w));
-        (data.rooms as Room[]).forEach(r => s.addRoom(r));
-        (data.doors ?? []).forEach((d: any) => s.addDoor(d));
-        (data.windows ?? []).forEach((w: any) => s.addWindow(w));
-        (data.furniture as Furniture[] ?? []).forEach(f => s.addFurniture(f));
+        (validData.walls as Wall[])?.forEach(w => s.addWall(w));
+        (validData.rooms as Room[])?.forEach(r => s.addRoom(r));
+        (validData.doors ?? [])?.forEach((d: any) => s.addDoor(d));
+        (validData.windows ?? [])?.forEach((w: any) => s.addWindow(w));
+        (validData.furniture as Furniture[] ?? [])?.forEach(f => s.addFurniture(f));
         s.setSelectedId(null);
         setImportError(null);
       } catch (err) {
-        setImportError('Could not load that file — not a valid floor plan JSON.');
+        setImportError(err instanceof Error ? err.message : 'Could not load that file — not a valid floor plan JSON.');
         setTimeout(() => setImportError(null), 4000);
       }
     };
@@ -1216,12 +1218,13 @@ export function FloorPlan2D() {
       {/* interaction layer */}
       <div
         className="absolute inset-0"
-        style={{ cursor }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
+        style={{ cursor, touchAction: 'none' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onPointerLeave={() => { dragRef.current = null; }}
         onDoubleClick={onDblClick}
-        onMouseLeave={() => { dragRef.current = null; }}
         onWheel={onWheel}
         onDragOver={onDragOver}
         onDrop={onDrop}
