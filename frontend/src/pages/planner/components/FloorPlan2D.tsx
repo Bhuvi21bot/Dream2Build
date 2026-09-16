@@ -215,6 +215,7 @@ export function FloorPlan2D() {
   const mouseRef = useRef<Point>({ x: 0, y: 0 }); // world coords
   const shiftKeyRef = useRef<boolean>(false);
   const [selectionBox, setSelectionBox] = useState<{ start: Point, end: Point } | null>(null);
+const [roomShape, setRoomShape] = useState<RoomShape>('rect');
 
   const store = usePlannerStore();
   const storeRef = useRef(store);
