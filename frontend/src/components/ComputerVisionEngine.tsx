@@ -60,34 +60,34 @@ export function ComputerVisionEngine() {
   // SVG representation for the interactive visualizer
   const renderVisualizer = () => {
     return (
-      <div className="relative w-full aspect-square md:aspect-auto md:h-full bg-slate-900/50 rounded-2xl border border-slate-700/50 overflow-hidden flex items-center justify-center p-8">
+      <div className="relative w-full aspect-square md:aspect-auto md:h-full bg-white rounded-3xl border border-[#1E2A22]/10 overflow-hidden flex items-center justify-center p-8 shadow-sm">
         {/* Blueprint Grid Background */}
         <div 
-          className="absolute inset-0 opacity-20 pointer-events-none"
+          className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
-            backgroundImage: `linear-gradient(to right, #3b82f6 1px, transparent 1px), linear-gradient(to bottom, #3b82f6 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(to right, #2F6F4E 1px, transparent 1px), linear-gradient(to bottom, #2F6F4E 1px, transparent 1px)`,
             backgroundSize: '20px 20px'
           }}
         />
 
         {/* Base Floor Plan SVG */}
-        <svg className="w-full h-full max-w-md drop-shadow-2xl" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <svg className="w-full h-full max-w-md drop-shadow-xl" viewBox="0 0 100 100" fill="none" stroke="currentColor">
           
           {/* Default state */}
           <motion.path 
             d="M 10 10 L 90 10 L 90 90 L 10 90 Z" 
             strokeWidth="1" 
-            className="text-slate-500"
+            className="text-[#1E2A22]/20"
           />
           <motion.path 
             d="M 50 10 L 50 90" 
             strokeWidth="1" 
-            className="text-slate-500"
+            className="text-[#1E2A22]/20"
           />
           <motion.path 
             d="M 10 50 L 50 50" 
             strokeWidth="1" 
-            className="text-slate-500"
+            className="text-[#1E2A22]/20"
           />
 
           {/* Image Preprocessing (Pillow) */}
@@ -95,7 +95,7 @@ export function ComputerVisionEngine() {
             x="0" y="0" width="100" height="100"
             fill="url(#scanning-gradient)"
             initial={{ opacity: 0 }}
-            animate={{ opacity: hoveredLib === 'Pillow' ? 0.2 : 0 }}
+            animate={{ opacity: hoveredLib === 'Pillow' ? 0.3 : 0 }}
             transition={{ duration: 0.3 }}
           />
 
@@ -107,7 +107,7 @@ export function ComputerVisionEngine() {
               scale: hoveredLib === 'OpenCV' ? 1 : 0.95
             }}
             transition={{ duration: 0.3 }}
-            className="text-cyan-400"
+            className="text-[#2F6F4E]"
             strokeWidth="2"
           >
             <path d="M 10 10 L 90 10 L 90 90 L 10 90 Z" strokeDasharray="4 2" />
@@ -121,9 +121,9 @@ export function ComputerVisionEngine() {
             animate={{ opacity: hoveredLib === 'scikit-image' ? 1 : 0 }}
             transition={{ duration: 0.3 }}
           >
-            <rect x="12" y="12" width="36" height="36" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" strokeWidth="0.5" />
-            <rect x="52" y="12" width="36" height="76" fill="rgba(168, 85, 247, 0.2)" stroke="#a855f7" strokeWidth="0.5" />
-            <rect x="12" y="52" width="36" height="36" fill="rgba(236, 72, 153, 0.2)" stroke="#ec4899" strokeWidth="0.5" />
+            <rect x="12" y="12" width="36" height="36" fill="rgba(217, 122, 63, 0.2)" stroke="#D97A3F" strokeWidth="0.5" />
+            <rect x="52" y="12" width="36" height="76" fill="rgba(242, 193, 78, 0.2)" stroke="#F2C14E" strokeWidth="0.5" />
+            <rect x="12" y="52" width="36" height="36" fill="rgba(47, 111, 78, 0.2)" stroke="#2F6F4E" strokeWidth="0.5" />
           </motion.g>
 
           {/* Matrix Operations (NumPy) */}
@@ -134,7 +134,7 @@ export function ComputerVisionEngine() {
           >
             {[...Array(10)].map((_, i) => (
               [...Array(10)].map((_, j) => (
-                <rect key={`${i}-${j}`} x={i * 10} y={j * 10} width="10" height="10" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" fill={Math.random() > 0.5 ? "rgba(255,255,255,0.05)" : "none"} />
+                <rect key={`${i}-${j}`} x={i * 10} y={j * 10} width="10" height="10" stroke="rgba(30,42,34,0.1)" strokeWidth="0.5" fill={Math.random() > 0.5 ? "rgba(30,42,34,0.05)" : "none"} />
               ))
             ))}
           </motion.g>
@@ -144,7 +144,7 @@ export function ComputerVisionEngine() {
             initial={{ opacity: 0 }}
             animate={{ opacity: hoveredLib === 'SciPy' ? 1 : 0 }}
             transition={{ duration: 0.3 }}
-            className="text-green-400"
+            className="text-[#a47148]"
           >
             <path d="M 10 10 Q 50 -10 90 10" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 1" />
             <path d="M 10 10 L 50 50" fill="none" stroke="currentColor" strokeWidth="0.5" />
@@ -154,7 +154,7 @@ export function ComputerVisionEngine() {
           <defs>
             <linearGradient id="scanning-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="transparent" />
-              <stop offset="50%" stopColor="#3b82f6" />
+              <stop offset="50%" stopColor="#a47148" />
               <stop offset="100%" stopColor="transparent" />
             </linearGradient>
           </defs>
@@ -162,12 +162,12 @@ export function ComputerVisionEngine() {
         
         {/* Scanning Laser Animation */}
         <motion.div 
-          className="absolute left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_10px_#3b82f6]"
+          className="absolute left-0 right-0 h-0.5 bg-[#a47148] shadow-[0_0_10px_#a47148]"
           animate={{ top: ['0%', '100%', '0%'] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
         />
         
-        <div className="absolute bottom-4 left-4 right-4 flex justify-between text-xs font-mono text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-md backdrop-blur border border-slate-700">
+        <div className="absolute bottom-4 left-4 right-4 flex justify-between text-xs font-mono text-[#1E2A22]/60 bg-white/90 px-3 py-1.5 rounded-md backdrop-blur border border-[#1E2A22]/10">
           <span>{hoveredLib ? `Processing: ${hoveredLib}` : 'Awaiting Input'}</span>
           <span>AI.CV.ENG</span>
         </div>
@@ -176,7 +176,7 @@ export function ComputerVisionEngine() {
   };
 
   return (
-    <section className="bg-[#0B0F19] text-white py-24 px-6 md:px-12 lg:px-24 font-sans selection:bg-blue-500/30">
+    <section className="bg-[#FAF8F3] text-[#1E2A22] py-24 px-6 md:px-12 lg:px-24 font-sans h-full overflow-y-auto">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
@@ -184,7 +184,7 @@ export function ComputerVisionEngine() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#a47148]/10 border border-[#a47148]/20 text-[#a47148] text-xs font-bold uppercase tracking-wider mb-4"
           >
             <Cpu className="w-4 h-4" />
             Powered by Python + AI
@@ -193,7 +193,7 @@ export function ComputerVisionEngine() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium tracking-tight"
           >
             Computer Vision Engine
           </motion.h2>
@@ -201,7 +201,7 @@ export function ComputerVisionEngine() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-[#1E2A22]/60 max-w-2xl mx-auto"
           >
             Turning 2D floor plans into intelligent architectural data. Dream2Build uses computer vision and mathematical geometry to understand walls, rooms, doors, and windows before generating the 3D environment.
           </motion.p>
@@ -235,30 +235,30 @@ export function ComputerVisionEngine() {
                   onMouseEnter={() => setHoveredLib(lib.name)}
                   onMouseLeave={() => setHoveredLib(null)}
                   className={`
-                    relative p-6 rounded-2xl border backdrop-blur-md transition-all duration-300 cursor-default
+                    relative p-6 rounded-2xl border transition-all duration-300 cursor-default
                     ${isHovered 
-                      ? 'bg-slate-800/80 border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)] scale-[1.02]' 
-                      : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'
+                      ? 'bg-white border-[#a47148]/40 shadow-lg scale-[1.02]' 
+                      : 'bg-white/60 border-[#1E2A22]/10 hover:border-[#1E2A22]/20'
                     }
                   `}
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-xl transition-colors duration-300 ${isHovered ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-400'}`}>
+                    <div className={`p-3 rounded-xl transition-colors duration-300 ${isHovered ? 'bg-[#a47148]/15 text-[#a47148]' : 'bg-[#1E2A22]/5 text-[#1E2A22]/50'}`}>
                       <Icon className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2 flex items-center justify-between">
+                      <h3 className="text-xl font-bold mb-2 flex items-center justify-between font-serif">
                         {lib.name}
-                        {isHovered && <span className="text-xs font-normal text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full animate-pulse">Active processing</span>}
+                        {isHovered && <span className="text-[10px] font-mono uppercase tracking-wide text-[#a47148] bg-[#a47148]/10 px-2 py-1 rounded-full animate-pulse">Active processing</span>}
                       </h3>
-                      <p className="text-slate-300 mb-4 text-sm leading-relaxed">
+                      <p className="text-[#1E2A22]/70 mb-4 text-sm leading-relaxed">
                         {lib.description}
                       </p>
                       
                       <div className="grid grid-cols-2 gap-2">
                         {lib.useCases.map((useCase) => (
-                          <div key={useCase} className="flex items-center gap-2 text-xs text-slate-400">
-                            <CheckCircle2 className="w-3 h-3 text-slate-500" />
+                          <div key={useCase} className="flex items-center gap-2 text-xs text-[#1E2A22]/60">
+                            <CheckCircle2 className="w-3 h-3 text-[#2F6F4E]" />
                             {useCase}
                           </div>
                         ))}
@@ -279,20 +279,20 @@ export function ComputerVisionEngine() {
           className="mb-24"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative">
-            <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent -translate-y-1/2 z-0" />
+            <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#a47148]/30 to-transparent -translate-y-1/2 z-0" />
             
             {pipelineSteps.map((step, index) => (
               <React.Fragment key={step}>
                 <div className="relative z-10 flex flex-col items-center group">
-                  <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 group-hover:border-blue-500 group-hover:text-blue-400 group-hover:bg-blue-500/10 transition-all duration-300 shadow-xl">
+                  <div className="w-12 h-12 rounded-full bg-white border border-[#1E2A22]/10 flex items-center justify-center text-[#1E2A22]/50 group-hover:border-[#a47148] group-hover:text-[#a47148] group-hover:bg-[#a47148]/5 transition-all duration-300 shadow-sm">
                     <span className="text-sm font-bold">{index + 1}</span>
                   </div>
-                  <span className="mt-4 text-xs font-medium text-slate-400 text-center max-w-[80px] group-hover:text-slate-200 transition-colors">
+                  <span className="mt-4 text-xs font-medium text-[#1E2A22]/60 text-center max-w-[80px] group-hover:text-[#1E2A22] transition-colors">
                     {step}
                   </span>
                 </div>
                 {index < pipelineSteps.length - 1 && (
-                  <ChevronRight className="md:hidden text-slate-700 w-5 h-5 my-2" />
+                  <ChevronRight className="md:hidden text-[#1E2A22]/20 w-5 h-5 my-2" />
                 )}
               </React.Fragment>
             ))}
@@ -306,40 +306,16 @@ export function ComputerVisionEngine() {
           viewport={{ once: true }}
           className="text-center mb-24"
         >
-          <h3 className="text-sm uppercase tracking-widest text-slate-500 font-semibold mb-6">Under the Hood</h3>
+          <h3 className="text-xs uppercase tracking-widest font-mono text-[#d4a276] mb-6">Under the Hood</h3>
           <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
             {techStack.map((tech) => (
               <span 
                 key={tech} 
-                className="px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 text-sm text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-600 transition-all cursor-default shadow-sm"
+                className="px-4 py-2 rounded-full bg-white border border-[#1E2A22]/10 text-sm text-[#1E2A22]/70 hover:bg-[#a47148] hover:text-white hover:border-[#a47148] transition-all cursor-default shadow-sm"
               >
                 {tech}
               </span>
             ))}
-          </div>
-        </motion.div>
-
-        {/* Final CTA */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-12 text-center border border-slate-700/50 shadow-2xl relative overflow-hidden"
-        >
-          {/* Decorative background glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
-          
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 relative z-10">From Blueprint to Reality</h2>
-          <p className="text-slate-400 mb-8 max-w-xl mx-auto relative z-10">
-            Upload your floor plan and let Dream2Build understand your space.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-            <button className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors shadow-[0_0_20px_rgba(37,99,235,0.3)] w-full sm:w-auto">
-              Try 2D → 3D
-            </button>
-            <button className="px-8 py-3 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold transition-colors w-full sm:w-auto">
-              Explore AI Features
-            </button>
           </div>
         </motion.div>
 
