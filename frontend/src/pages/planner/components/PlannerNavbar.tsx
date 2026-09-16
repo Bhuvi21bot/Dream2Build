@@ -12,6 +12,8 @@ import { toast } from '@/components/ui/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { ComputerVisionEngine } from '../../../components/ComputerVisionEngine';
+import { Sparkles } from 'lucide-react';
 
 // ─── Settings Modal ───────────────────────────────────────────────────────────
 function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -103,10 +105,58 @@ function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }
   );
 }
 
+// ─── AI Engine Modal ──────────────────────────────────────────────────────────
+function AIEngineModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: -10 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[95vw] h-[90vh] max-w-7xl bg-[#FAF8F3] border border-border rounded-2xl shadow-2xl shadow-black/50 overflow-hidden flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[#1E2A22]/10 bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#a47148]/10 flex items-center justify-center border border-[#a47148]/30">
+                  <Sparkles className="w-4 h-4 text-[#a47148]" />
+                </div>
+                <h2 className="font-serif font-medium text-[#1E2A22] text-lg">AI Vision Engine</h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[#1E2A22]/50 hover:text-[#1E2A22] hover:bg-[#1E2A22]/5 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-hidden relative">
+              <ComputerVisionEngine />
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 export function PlannerNavbar() {
   const { view, setView, undo, redo, canUndo, canRedo, walls, rooms, doors, windows, furniture } = usePlannerStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiEngineOpen, setAiEngineOpen] = useState(false);
 
   const handleGenerate3D = () => {
     window.dispatchEvent(new Event('dream2build:generate3d'));
@@ -146,6 +196,7 @@ export function PlannerNavbar() {
   return (
     <>
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <AIEngineModal open={aiEngineOpen} onClose={() => setAiEngineOpen(false)} />
 
       <header className="h-14 border-b border-border bg-card/90 backdrop-blur-xl flex items-center justify-between px-4 z-40">
         {/* Left: Back + Logo */}
@@ -242,6 +293,16 @@ export function PlannerNavbar() {
               Generate 3D
             </Button>
           </motion.div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAiEngineOpen(true)}
+            className="text-amber-600 border-amber-600/30 hover:bg-amber-600/10"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI Engine
+          </Button>
 
           <Button
             variant="ghost"
