@@ -1,18 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { PlusCircle, Search, LayoutTemplate, Home, Building, Box, ShoppingBag, ArrowRight } from "lucide-react";
+import { PlusCircle, Search, LayoutTemplate, Home, Building, Box, ShoppingBag, ArrowRight, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export default function DesignHub() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col p-8 lg:p-12">
+    <div className="min-h-screen bg-background text-foreground flex flex-col p-8 pt-28 lg:p-12 lg:pt-32">
       <div className="max-w-6xl mx-auto w-full space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">What will you build today?</h1>
-            <p className="text-muted-foreground mt-2 text-lg">Design your space. Visualize the future.</p>
+          <div className="flex items-start gap-4">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="mt-1">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">What will you build today?</h1>
+              <p className="text-muted-foreground mt-2 text-lg">Design your space. Visualize the future.</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/design/my-spaces">
