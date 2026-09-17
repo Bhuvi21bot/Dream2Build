@@ -6,6 +6,9 @@ import Marketplace from "@/pages/marketplace"
 import About from "@/pages/about"
 import Login from "@/pages/logint"
 import { Navbar } from "@/components/navbar"
+import DesignHub from "@/pages/design-hub"
+import DesignNew from "@/pages/design-new"
+import DesignMySpaces from "@/pages/design-my-spaces"
 
 export {
   Home,
@@ -16,4 +19,7 @@ export {
   About,
   Login,
   Navbar,
+  DesignHub,
+  DesignNew,
+  DesignMySpaces,
 }
