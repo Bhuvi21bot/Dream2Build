@@ -21,16 +21,16 @@ export default function DesignHub() {
               <p className="text-muted-foreground mt-2 text-lg">Design your space. Visualize the future.</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/design/my-spaces">
-              <Button variant="outline" className="gap-2">
-                <Box className="w-4 h-4" /> My Spaces
-              </Button>
-            </Link>
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              👤
+            <div className="flex items-center gap-4">
+              <Link href="/design/my-spaces">
+                <Button variant="outline" className="gap-2">
+                  <Box className="w-4 h-4" /> My Spaces
+                </Button>
+              </Link>
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center ml-auto">
+                👤
+              </div>
             </div>
-          </div>
         </div>
 
         {/* Hero CTA - Create New */}
