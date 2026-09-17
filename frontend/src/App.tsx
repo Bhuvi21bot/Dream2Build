@@ -14,6 +14,9 @@ import {
   Marketplace,
   About,
   Login,
+  DesignHub,
+  DesignNew,
+  DesignMySpaces,
 } from "@/pages/index";
 
 import { lazy, Suspense } from "react";
@@ -107,8 +110,13 @@ function Router() {
             <Route path="/repo" component={DesignGitRepo} />
             <Route path="/marketplace/repo" component={DesignGitRepo} />
 
+            {/* DESIGN HUB */}
+            <Route path="/design" component={DesignHub} />
+            <Route path="/design/new" component={DesignNew} />
+            <Route path="/design/my-spaces" component={DesignMySpaces} />
+
             {/* DESIGN WORKSPACE */}
-            <Route path="/design/:category">
+            <Route path="/workspace/:category">
               {(params) => (
                 <DesignWorkspace category={params.category} />
               )}
