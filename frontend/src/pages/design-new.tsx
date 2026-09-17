@@ -12,7 +12,7 @@ export default function DesignNew() {
       title: "Blank Canvas",
       description: "Start from scratch with an empty planner",
       icon: <Square className="w-8 h-8 text-primary" />,
-      onClick: () => setLocation("/planner")
+      onClick: () => setLocation("/planner?blank=1")
     },
     {
       id: "ai",

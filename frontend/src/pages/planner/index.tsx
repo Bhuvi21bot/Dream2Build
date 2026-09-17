@@ -16,6 +16,10 @@ export default function Planner() {
   useEffect(() => {
     if (walls.length === 0) {
       const params = new URLSearchParams(window.location.search);
+      if (params.has('blank')) {
+        // Do not load any sample when blank canvas requested
+        return;
+      }
       const template = params.get('template') || 'oasis';
       loadSamplePlan(template);
     }
