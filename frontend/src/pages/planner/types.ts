@@ -100,6 +100,9 @@ export type FloorPlanState = {
   selectedFurnitureStyle: FurnitureStyle
   selectedRoomType: RoomType
   selectedRoomShape: 'square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal'
+  selectedFloorMaterial: FloorMaterial
+  selectedWallMaterial: WallMaterial
+  selectedWallColor: string
   gridSize: number
   snapToGrid: boolean
   showGrid: boolean
@@ -118,6 +121,9 @@ export type FloorPlanState = {
   setSelectedFurnitureStyle: (style: FurnitureStyle) => void
   setSelectedRoomType: (type: RoomType) => void
   setSelectedRoomShape: (shape: 'square' | 'l-shape' | 'u-shape' | 't-shape' | 'octagonal') => void
+  setSelectedFloorMaterial: (mat: FloorMaterial) => void
+  setSelectedWallMaterial: (mat: WallMaterial) => void
+  setSelectedWallColor: (color: string) => void
 
   addWall: (wall: Wall) => void
   updateWall: (id: string, wall: Partial<Wall>, saveHistory?: boolean) => void

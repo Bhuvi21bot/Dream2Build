@@ -106,6 +106,9 @@ export function LeftSidebar() {
     selectedFurnitureStyle, setSelectedFurnitureStyle,
     selectedRoomType, setSelectedRoomType,
     selectedRoomShape, setSelectedRoomShape,
+    selectedFloorMaterial, setSelectedFloorMaterial,
+    selectedWallMaterial, setSelectedWallMaterial,
+    selectedWallColor, setSelectedWallColor,
     showCeilingLights, toggleCeilingLights,
     selectedId,
     walls, rooms, doors, windows, furniture,
@@ -132,7 +135,7 @@ export function LeftSidebar() {
     if (furniture.find(f => f.id === selectedId)) deleteFurniture(selectedId);
   };
 
-  const showPanel = activeTool === 'furniture' || activeTool === 'room' || activeTool === 'polygon-room';
+  const showPanel = activeTool === 'furniture' || activeTool === 'room' || activeTool === 'polygon-room' || activeTool === 'wall';
 
   return (
     <div className="relative flex h-full z-30">
@@ -361,6 +364,65 @@ export function LeftSidebar() {
                         <span className="w-3.5 h-3.5 rounded border border-white/20 shrink-0" style={{ backgroundColor: color }} />
                       </button>
                     ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 mt-2">Floor Material</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['hardwood', 'tiles', 'marble', 'carpet', 'concrete'].map(mat => (
+                      <button
+                        key={mat}
+                        onClick={() => setSelectedFloorMaterial(mat as any)}
+                        className={cn(
+                          'py-1.5 rounded-md text-[10px] font-semibold border transition-all capitalize',
+                          selectedFloorMaterial === mat
+                            ? 'bg-amber-500/20 border-amber-500/50 text-amber-500'
+                            : 'border-border text-foreground/50 hover:text-foreground hover:bg-muted'
+                        )}
+                      >
+                        {mat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* ── Wall tool panel ────────────────────────────────────────── */}
+            {activeTool === 'wall' && (
+              <div className="flex flex-col h-full p-4 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">Wall Material</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['white-paint', 'concrete', 'brick', 'wood-panel'].map(mat => (
+                      <button
+                        key={mat}
+                        onClick={() => setSelectedWallMaterial(mat as any)}
+                        className={cn(
+                          'py-1.5 rounded-md text-[10px] font-semibold border transition-all capitalize',
+                          selectedWallMaterial === mat
+                            ? 'bg-amber-500/20 border-amber-500/50 text-amber-500'
+                            : 'border-border text-foreground/50 hover:text-foreground hover:bg-muted'
+                        )}
+                      >
+                        {mat.replace('-', ' ')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 mt-2">Paint Color</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={selectedWallColor}
+                      onChange={(e) => setSelectedWallColor(e.target.value)}
+                      className="w-9 h-9 rounded-md border border-border bg-background cursor-pointer"
+                    />
+                    <span className="text-xs text-foreground/40 font-mono truncate">
+                      {selectedWallColor}
+                    </span>
                   </div>
                 </div>
               </div>

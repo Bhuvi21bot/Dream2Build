@@ -29,6 +29,9 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   selectedFurnitureStyle: 'modern',
   selectedRoomType: 'living',
   selectedRoomShape: 'square',
+  selectedFloorMaterial: 'hardwood',
+  selectedWallMaterial: 'white-paint',
+  selectedWallColor: '#f0eeea',
   gridSize: 20,
   snapToGrid: true,
   showGrid: true,
@@ -82,6 +85,9 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
   setSelectedFurnitureStyle: (style) => set({ selectedFurnitureStyle: style }),
   setSelectedRoomType: (type) => set({ selectedRoomType: type }),
   setSelectedRoomShape: (shape) => set({ selectedRoomShape: shape }),
+  setSelectedFloorMaterial: (mat) => set({ selectedFloorMaterial: mat }),
+  setSelectedWallMaterial: (mat) => set({ selectedWallMaterial: mat }),
+  setSelectedWallColor: (color) => set({ selectedWallColor: color }),
 
   addWall: (wall) => set((state) => {
     const snap = snapshot(state);
@@ -120,13 +126,36 @@ export const usePlannerStore = create<FloorPlanState>((set, get) => ({
     walls.push(wall);
     return { walls, history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
   }),
-  updateWall: (id, wall, saveHistory) => set((state) => {
+  updateWall: (id, wallUpdate, saveHistory) => set((state) => {
+    const oldWall = state.walls.find(w => w.id === id);
+    let newRooms = state.rooms;
+
+    if (oldWall && (wallUpdate.start || wallUpdate.end)) {
+      newRooms = state.rooms.map(room => {
+        let changed = false;
+        const newPoints = room.points.map(pt => {
+          if (wallUpdate.start && Math.abs(pt.x - oldWall.start.x) < 0.1 && Math.abs(pt.y - oldWall.start.y) < 0.1) {
+            changed = true;
+            return { ...wallUpdate.start };
+          }
+          if (wallUpdate.end && Math.abs(pt.x - oldWall.end.x) < 0.1 && Math.abs(pt.y - oldWall.end.y) < 0.1) {
+            changed = true;
+            return { ...wallUpdate.end };
+          }
+          return pt;
+        });
+        return changed ? { ...room, points: newPoints } : room;
+      });
+    }
+
+    const newWalls = state.walls.map(w => w.id === id ? { ...w, ...wallUpdate } : w);
+
     if (saveHistory) {
       const snap = snapshot(state);
       const newHistory = [...state.history.slice(0, state.historyIndex + 1), snap].slice(-HISTORY_LIMIT);
-      return { walls: state.walls.map(w => w.id === id ? { ...w, ...wall } : w), history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
+      return { walls: newWalls, rooms: newRooms, history: newHistory, historyIndex: newHistory.length - 1, canUndo: true, canRedo: false };
     }
-    return { walls: state.walls.map(w => w.id === id ? { ...w, ...wall } : w) };
+    return { walls: newWalls, rooms: newRooms };
   }),
   deleteWall: (id) => set((state) => {
     const snap = snapshot(state);
