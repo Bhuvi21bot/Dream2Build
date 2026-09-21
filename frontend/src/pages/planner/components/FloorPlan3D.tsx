@@ -816,9 +816,9 @@ function RoomFloor({ room }: { room: Room }) {
   const shape = useMemo(() => {
     const s = new THREE.Shape();
     if (room.points.length > 0) {
-      s.moveTo(room.points[0].x, -room.points[0].y);
+      s.moveTo(room.points[0].x, room.points[0].y);
       for (let i = 1; i < room.points.length; i++) {
-        s.lineTo(room.points[i].x, -room.points[i].y);
+        s.lineTo(room.points[i].x, room.points[i].y);
       }
     }
     return s;
