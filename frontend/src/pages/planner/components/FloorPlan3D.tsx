@@ -236,7 +236,7 @@ function FloorGrid({ xs, ys, w, h, spacing, color }: { xs: number; ys: number; w
   const geo = new THREE.BufferGeometry().setFromPoints(points);
   return (
     <lineSegments geometry={geo}>
-      <lineBasicMaterial color={color} opacity={0.25} transparent />
+      <lineBasicMaterial color={color} opacity={0.6} transparent />
     </lineSegments>
   );
 }

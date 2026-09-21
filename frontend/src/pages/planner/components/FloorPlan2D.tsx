@@ -364,8 +364,8 @@ const [roomShape, setRoomShape] = useState<RoomShape>('rect');
     if (showGrid) {
       const ox = -vx / vs, oy = -vy / vs, gw = W / vs, gh = H / vs;
       const sx = Math.floor(ox / GRID) * GRID, sy = Math.floor(oy / GRID) * GRID;
-      ctx.strokeStyle = 'rgba(255,165,0,0.08)';
-      ctx.lineWidth = 0.5 / vs;
+      ctx.strokeStyle = 'rgba(255,165,0,0.25)'; // Increased opacity for better visibility
+      ctx.lineWidth = 1.0 / vs; // slightly thicker
       for (let gx = sx; gx < ox + gw + GRID; gx += GRID) { ctx.beginPath(); ctx.moveTo(gx, sy); ctx.lineTo(gx, oy + gh + GRID); ctx.stroke(); }
       for (let gy = sy; gy < oy + gh + GRID; gy += GRID) { ctx.beginPath(); ctx.moveTo(sx, gy); ctx.lineTo(ox + gw + GRID, gy); ctx.stroke(); }
     }
@@ -1061,7 +1061,7 @@ const [roomShape, setRoomShape] = useState<RoomShape>('rect');
     const world = toWorld(sx, sy);
     const sp = snapP(world);
     const drag = dragRef.current;
-    const { activeTool, addWall, addRoom, selectedRoomType, setSelectedIds, furniture } = storeRef.current;
+    const { activeTool, addWall, addRoom, selectedRoomType, selectedWallMaterial, selectedWallColor, selectedFloorMaterial, setSelectedIds, furniture } = storeRef.current;
     shiftKeyRef.current = e.shiftKey;
 
     if (drag?.kind === 'pan' && shiftKeyRef.current) {
@@ -1081,7 +1081,7 @@ const [roomShape, setRoomShape] = useState<RoomShape>('rect');
       if (dist(drag.start, endPt) > 10) {
         addWall({
           id: generateId('w_'), start: drag.start, end: endPt,
-          thickness: WALL_T, height: 280, material: 'white-paint'
+          thickness: WALL_T, height: 280, material: selectedWallMaterial, paintColor: selectedWallColor
         });
       }
     }
@@ -1095,7 +1095,7 @@ const [roomShape, setRoomShape] = useState<RoomShape>('rect');
           name: selectedRoomType.charAt(0).toUpperCase() + selectedRoomType.slice(1),
           type: selectedRoomType,
           points,
-          floorMaterial: 'hardwood', color: clr.fill
+          floorMaterial: selectedFloorMaterial, color: clr.fill
         });
         
         // Automatically create walls for the room
@@ -1108,7 +1108,8 @@ const [roomShape, setRoomShape] = useState<RoomShape>('rect');
             end: { ...end },
             thickness: WALL_T,
             height: 280,
-            material: 'white-paint'
+            material: selectedWallMaterial,
+            paintColor: selectedWallColor
           });
         }
       }
