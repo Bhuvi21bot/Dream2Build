@@ -2,6 +2,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Toaster } from "@/components/ui/toaster"
 import { QuickDock } from "@/components/quick-dock"
+import AiBot from "@/components/AiBot"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       <Toaster />
+      <AiBot />
     </div>
   )
 }
