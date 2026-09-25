@@ -143,13 +143,13 @@ const AiBot = () => {
             <div className="ai-bot-blob" ref={blobRef}>
               <div 
                 className="eye-container eye-left"
-                style={{ transform: \`translate(\${eyeTransform.x}px, \${eyeTransform.y}px)\` }}
+                style={{ transform: `translate(${eyeTransform.x}px, ${eyeTransform.y}px)` }}
               >
                 <div className="ai-bot-eye"></div>
               </div>
               <div 
                 className="eye-container eye-right"
-                style={{ transform: \`translate(\${eyeTransform.x}px, \${eyeTransform.y}px)\` }}
+                style={{ transform: `translate(${eyeTransform.x}px, ${eyeTransform.y}px)` }}
               >
                 <div className="ai-bot-eye"></div>
               </div>
@@ -195,13 +195,13 @@ const AiBot = () => {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {messages.map((msg, idx) => (
-                <div key={idx} className={\`flex \${msg.role === 'user' ? 'justify-end' : 'justify-start'}\`}>
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={\`max-w-[80%] rounded-2xl px-4 py-3 text-sm \${
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
                       msg.role === 'user'
                         ? 'bg-[#1E2A22] text-[#FAF8F3] rounded-tr-sm'
                         : 'bg-white border border-[#1E2A22]/10 text-[#1E2A22] shadow-sm rounded-tl-sm'
-                    }\`}
+                    }`}
                   >
                     {msg.content}
                   </div>
