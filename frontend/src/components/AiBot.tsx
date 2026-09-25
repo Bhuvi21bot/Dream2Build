@@ -10,6 +10,7 @@ const AiBot = () => {
     { role: 'assistant', content: 'Hi there! I am your Dream2Build assistant. How can I help you today?' }
   ]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
   const blobRef = useRef<HTMLDivElement>(null);
   const [eyeTransform, setEyeTransform] = useState({ x: 0, y: 0 });
@@ -40,13 +41,44 @@ const AiBot = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { role: 'user', content: input }]);
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    const userText = input.trim();
+    const updatedMessages = [...messages, { role: 'user', content: userText }];
+    setMessages(updatedMessages);
     setInput('');
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'This is a demo response from the AI bot!' }]);
-    }, 1000);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer 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`
+        },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages: [
+            { role: 'system', content: 'You are DreamBot, a helpful AI assistant for Dream2Build, a construction and design platform. Keep responses concise and helpful.' },
+            ...updatedMessages.slice(1).map(m => ({ role: m.role, content: m.content }))
+          ],
+          temperature: 0.7,
+          max_tokens: 300
+        })
+      });
+
+      const data = await response.json();
+      if (data.choices && data.choices.length > 0) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.choices[0].message.content }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I had trouble processing that.' }]);
+      }
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, there was a network error. Please try again.' }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
