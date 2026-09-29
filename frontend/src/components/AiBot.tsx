@@ -57,7 +57,7 @@ const AiBot = () => {
           'Authorization': `Bearer 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`
         },
         body: JSON.stringify({
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           messages: [
             { role: 'system', content: 'You are DreamBot, a helpful AI assistant for Dream2Build, a construction and design platform. Keep responses concise and helpful.' },
             ...updatedMessages.slice(1).map(m => ({ role: m.role, content: m.content }))
@@ -67,11 +67,18 @@ const AiBot = () => {
         })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Groq API Error:', errorText);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I had trouble processing that.' }]);
+        return;
+      }
+
       const data = await response.json();
       if (data.choices && data.choices.length > 0) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.choices[0].message.content }]);
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I had trouble processing that.' }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I received an empty response.' }]);
       }
     } catch (error) {
       console.error(error);
